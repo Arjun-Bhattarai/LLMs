@@ -1,1 +1,1 @@
-# LLMs
+This project demonstrates basic text preprocessing and tokenization techniques used in Large Language Models (LLMs). It includes reading raw text, cleaning it using regular expressions(re module), and splitting it into tokens.

@@ -1,11 +1,31 @@
-This project demonstrates basic text preprocessing and tokenization techniques used in Large Language Models (LLMs). It includes reading raw text, cleaning it using regular expressions (re module), and splitting it into tokens.
+# LLM Tokenization & Preprocessing Project
 
-It also explores how tokenizers work internally, including simple word-level tokenization and the implementation of Byte Pair Encoding (BPE). The goal is to understand how raw text is converted into numerical representations that models can process.
+## 📌 Project Overview
 
-Key features:
-- Word-level tokenization with unknown token handling
-- Custom implementation of Byte Pair Encoding (BPE)
-- Encode and decode functionality for tokens
-- Experimentation with special tokens like `<|endoftext|>`
+This project demonstrates fundamental **text preprocessing and tokenization techniques** used in Large Language Models (LLMs). It focuses on how raw text is converted into numerical form that models can understand.
 
-This project is useful for understanding the preprocessing pipeline behind modern LLMs like GPT.
+The pipeline includes reading raw text, cleaning it using regular expressions (`re` module), and converting it into tokens for training.
+
+It also explores internal workings of tokenizers, including **word-level tokenization** and a simple implementation of **Byte Pair Encoding (BPE)** used in modern LLMs like GPT.
+
+---
+
+## 🚀 Key Features
+
+- Raw text loading and preprocessing
+- Word-level tokenization with `<UNK>` handling
+- Custom Byte Pair Encoding (BPE) implementation
+- Encode and decode functions for text ↔ token conversion
+- Special token support like `<|endoftext|>`
+- Input-target pair creation for next-token prediction
+- Sliding window dataset for training LLMs
+- PyTorch DataLoader integration for batching
+
+
+
+## 📦 Tech Stack
+
+- Python
+- Regular Expressions (`re`)
+- PyTorch
+- tiktoken (GPT tokenizer)

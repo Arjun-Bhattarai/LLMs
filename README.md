@@ -2,15 +2,28 @@
 
 ## 📌 Project Overview
 
-This project demonstrates fundamental **text preprocessing and tokenization techniques** used in Large Language Models (LLMs). It focuses on how raw text is converted into numerical form that models can understand.
+This project demonstrates fundamental **text preprocessing and tokenization techniques used in Large Language Models (LLMs)**. It explains how raw text is converted into numerical representations that machine learning models can understand.
 
-The pipeline includes reading raw text, cleaning it using regular expressions (`re` module), and converting it into tokens for training.
+The pipeline includes reading raw text, cleaning it using regular expressions (`re module`), and converting it into tokens for training. It also explores how tokenizers work internally using a simple **word-level tokenizer with vocabulary mapping and `<UNK>` handling**.
 
-It also explores internal workings of tokenizers, including **word-level tokenization** and a simple implementation of **Byte Pair Encoding (BPE)** used in modern LLMs like GPT.
-
-Additionally, the project introduces **token embeddings using PyTorch**, showing how token IDs are converted into dense vector representations for neural networks.
+Additionally, the project introduces **Byte Pair Encoding (BPE)** concepts and **token embeddings using PyTorch**, showing how token IDs are converted into dense vector representations for neural networks.
 
 ---
+
+## ⚙️ Preprocessing Pipeline
+
+The preprocessing pipeline used in this project:
+
+1. **Load Raw Text**
+   - Input raw dataset (corpus)
+
+2. **Text Normalization**
+   - Convert text to lowercase
+
+3. **Tokenization**
+   ```python
+   import re
+   tokens = re.findall(r"\b\w+\b", raw_data.lower())
 
 ## 🚀 Key Features
 

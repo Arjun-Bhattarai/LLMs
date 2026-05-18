@@ -1,6 +1,5 @@
 # LLM Tokenization & Preprocessing Project
 
-## 📌 Project Overview
 
 This project demonstrates fundamental **text preprocessing and tokenization techniques used in Large Language Models (LLMs)**. It explains how raw text is converted into numerical representations that machine learning models can understand.
 

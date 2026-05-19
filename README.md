@@ -1,41 +1,58 @@
 # LLM Tokenization & Preprocessing Project
 
-
 This project demonstrates fundamental **text preprocessing and tokenization techniques used in Large Language Models (LLMs)**. It explains how raw text is converted into numerical representations that machine learning models can understand.
 
-The pipeline includes reading raw text, cleaning it using regular expressions (`re module`), and converting it into tokens for training. It also explores how tokenizers work internally using a simple **word-level tokenizer with vocabulary mapping and `<UNK>` handling**.
+The pipeline includes cleaning text using regex, tokenizing into words, building vocabulary, handling `<UNK>` tokens, and converting text into training-ready sequences. It also explores **BPE concepts** and **PyTorch-based token embeddings**.
 
-Additionally, the project introduces **Byte Pair Encoding (BPE)** concepts and **token embeddings using PyTorch**, showing how token IDs are converted into dense vector representations for neural networks.
+Additionally, this project implements a **basic self-attention mechanism from scratch**, including dot-product similarity, softmax normalization, and context vector generation to understand how Transformers work internally.
 
 ---
 
 ## ⚙️ Preprocessing Pipeline
 
-The preprocessing pipeline used in this project:
-
 1. **Load Raw Text**
-   - Input raw dataset (corpus)
+   - Input dataset (corpus)
 
 2. **Text Normalization**
    - Convert text to lowercase
 
 3. **Tokenization**
-   ```python
-   import re
-   tokens = re.findall(r"\b\w+\b", raw_data.lower())
+```python
+import re
+tokens = re.findall(r"\b\w+\b", raw_data.lower())
+```
+
+4. **Vocabulary Building**
+   - Map words → token IDs
+   - Handle unknown words using `<UNK>`
+
+5. **Encoding / Decoding**
+   - Convert text ↔ token IDs
+
+---
+
+## 🧠 Self-Attention (Implemented from Scratch)
+
+- Created token embeddings using PyTorch tensors
+- Computed **dot-product attention scores**
+- Applied **softmax normalization**
+- Generated **attention weights**
+- Computed **context vectors using weighted sum**
+
+
 
 ## 🚀 Key Features
 
-- Raw text loading and preprocessing
-- Text cleaning using regular expressions (`re`)
+- Raw text preprocessing using regex
 - Word-level tokenization with `<UNK>` handling
-- Custom Byte Pair Encoding (BPE) implementation
-- Encode and decode functions for text ↔ token conversion
-- Special token support like `<|endoftext|>`
-- Input-target pair creation for next-token prediction
-- Sliding window dataset for training LLMs
-- Token embedding layer using `torch.nn.Embedding`
-- PyTorch DataLoader integration for batching
+- Basic BPE understanding
+- Encode/decode functions
+- Input-target dataset creation for next-token prediction
+- Sliding window training data
+- Token embeddings using `torch.nn.Embedding`
+- Manual self-attention implementation (from scratch)
+- Context vector computation
+- PyTorch DataLoader integration
 
 ---
 
@@ -44,16 +61,8 @@ The preprocessing pipeline used in this project:
 - Python
 - Regular Expressions (`re`)
 - PyTorch
-- tiktoken (GPT-style tokenizer)
-- Token Embeddings using `torch.nn.Embedding`
-
----
+- tiktoken (GPT-style tokenizer concept)
+- NumPy (optional for preprocessing)
 
 
 
-## ⚙️ Future Improvements
-
-- Train a small language model using this pipeline
-- Add visualization of embeddings
-- Improve BPE efficiency
-- Extend dataset to multiple documents

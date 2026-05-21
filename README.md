@@ -4,7 +4,7 @@ This project demonstrates fundamental **text preprocessing and tokenization tech
 
 The pipeline includes cleaning text using regex, tokenizing into words, building vocabulary, handling `<UNK>` tokens, and converting text into training-ready sequences. It also explores **BPE concepts** and **PyTorch-based token embeddings**.
 
-Additionally, this project implements a **basic self-attention mechanism from scratch**, including dot-product similarity, softmax normalization, and context vector generation to understand how Transformers work internally.
+Additionally, this project implements a **basic self-attention mechanism from scratch**, including dot-product similarity, softmax normalization, and context vector generation, as well as a **causal (masked) self-attention mechanism** to understand how Transformers work internally.
 
 ---
 
@@ -39,7 +39,21 @@ tokens = re.findall(r"\b\w+\b", raw_data.lower())
 - Generated **attention weights**
 - Computed **context vectors using weighted sum**
 
+---
 
+## 🔒 Causal Attention (Masked Self-Attention)
+
+Causal attention extends self-attention by ensuring that each token can only attend to **itself and previous tokens** — never future ones. This is essential for autoregressive language model training and generation.
+
+### Key Concepts
+
+- **Causal Mask**: An upper-triangular mask (filled with `-inf` or `0`) is applied to the raw attention scores before softmax, zeroing out all future positions
+- **Masked Softmax**: After masking, softmax converts scores to attention weights where future positions have zero weight
+- **Autoregressive Property**: Guarantees the model cannot "cheat" by looking ahead during training
+
+#
+
+---
 
 ## 🚀 Key Features
 
@@ -51,6 +65,9 @@ tokens = re.findall(r"\b\w+\b", raw_data.lower())
 - Sliding window training data
 - Token embeddings using `torch.nn.Embedding`
 - Manual self-attention implementation (from scratch)
+- **Causal (masked) self-attention implementation**
+- **Upper-triangular masking with `-inf` fill**
+- **Autoregressive attention weight verification**
 - Context vector computation
 - PyTorch DataLoader integration
 
@@ -63,6 +80,3 @@ tokens = re.findall(r"\b\w+\b", raw_data.lower())
 - PyTorch
 - tiktoken (GPT-style tokenizer concept)
 - NumPy (optional for preprocessing)
-
-
-

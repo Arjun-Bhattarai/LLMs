@@ -31,45 +31,22 @@ tokens = re.findall(r"\b\w+\b", raw_data.lower())
 
 ---
 
-## 🧠 Self-Attention (Implemented from Scratch)
-
-- Created token embeddings using PyTorch tensors
-- Computed **dot-product attention scores**
-- Applied **softmax normalization**
-- Generated **attention weights**
-- Computed **context vectors using weighted sum**
-
----
-
-## 🔒 Causal Attention (Masked Self-Attention)
-
-Causal attention extends self-attention by ensuring that each token can only attend to **itself and previous tokens** — never future ones. This is essential for autoregressive language model training and generation.
-
-### Key Concepts
-
-- **Causal Mask**: An upper-triangular mask (filled with `-inf` or `0`) is applied to the raw attention scores before softmax, zeroing out all future positions
-- **Masked Softmax**: After masking, softmax converts scores to attention weights where future positions have zero weight
-- **Autoregressive Property**: Guarantees the model cannot "cheat" by looking ahead during training
-
-#
-
----
+## Implementations
+- **Self-Attention** — dot-product scores, softmax normalization, context vectors
+- **Causal Attention** — upper-triangular `-inf` mask for autoregressive generation
+- **Multi-Head Attention** — parallel heads via `MultiHeadAttentionWrapper`, concatenated outputs
 
 ## 🚀 Key Features
 
-- Raw text preprocessing using regex
-- Word-level tokenization with `<UNK>` handling
-- Basic BPE understanding
-- Encode/decode functions
-- Input-target dataset creation for next-token prediction
-- Sliding window training data
-- Token embeddings using `torch.nn.Embedding`
-- Manual self-attention implementation (from scratch)
-- **Causal (masked) self-attention implementation**
-- **Upper-triangular masking with `-inf` fill**
-- **Autoregressive attention weight verification**
-- Context vector computation
-- PyTorch DataLoader integration
+## Key Features
+- Regex-based text cleaning & word-level tokenization
+- Vocabulary builder with `<UNK>` token support
+- Encode/decode functions + sliding window dataset creation
+- `torch.nn.Embedding` for token + positional embeddings
+- Self-attention from scratch (dot-product, softmax, context vectors)
+- Causal masked attention with upper-triangular `-inf` fill
+- Multi-head attention via `MultiHeadAttentionWrapper`
+- PyTorch `DataLoader` integration for next-token prediction training
 
 ---
 

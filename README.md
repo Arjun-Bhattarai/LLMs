@@ -4,7 +4,8 @@ This project demonstrates fundamental **text preprocessing and tokenization tech
 
 The pipeline includes cleaning text using regex, tokenizing into words, building vocabulary, handling `<UNK>` tokens, and converting text into training-ready sequences. It also explores **BPE concepts** and **PyTorch-based token embeddings**.
 
-Additionally, this project implements a **basic self-attention mechanism from scratch**, including dot-product similarity, softmax normalization, and context vector generation, as well as a **causal (masked) self-attention mechanism** to understand how Transformers work internally.
+Additionally, this project implements core Transformer building blocks from scratch, including **self-attention, causal (masked) attention, and multi-head attention**, to understand how modern LLMs operate internally.
+
 
 ---
 
@@ -32,28 +33,26 @@ tokens = re.findall(r"\b\w+\b", raw_data.lower())
 ---
 
 ## Implementations
-- **Self-Attention** — dot-product scores, softmax normalization, context vectors
-- **Causal Attention** — upper-triangular `-inf` mask for autoregressive generation
-- **Multi-Head Attention** — parallel heads via `MultiHeadAttentionWrapper`, concatenated outputs
+Self-Attention — dot-product attention scores, softmax normalization, and context vector computation
+Causal Attention — upper-triangular -inf masking for autoregressive (left-to-right) generation
+Multi-Head Attention — parallel attention heads via MultiHeadAttentionWrapper and full MultiHeadAttention implementation with head splitting, scaled attention, dropout, and output projection
+
 
 ## 🚀 Key Features
-
-## Key Features
-- Regex-based text cleaning & word-level tokenization
-- Vocabulary builder with `<UNK>` token support
-- Encode/decode functions + sliding window dataset creation
-- `torch.nn.Embedding` for token + positional embeddings
-- Self-attention from scratch (dot-product, softmax, context vectors)
-- Causal masked attention with upper-triangular `-inf` fill
-- Multi-head attention via `MultiHeadAttentionWrapper`
-- PyTorch `DataLoader` integration for next-token prediction training
+Regex-based text cleaning and word-level tokenization
+Vocabulary builder with <UNK> token handling
+Encode/decode pipeline with sliding window dataset creation
+Token and positional embeddings using torch.nn.Embedding
+Self-attention implemented from scratch (dot-product, softmax, context vectors)
+Causal masked attention with upper-triangular -inf masking
+Multi-head attention implementation with parallel heads and concatenation
+PyTorch DataLoader integration for next-token prediction training
 
 ---
 
 ## 📦 Tech Stack
-
-- Python
-- Regular Expressions (`re`)
-- PyTorch
-- tiktoken (GPT-style tokenizer concept)
-- NumPy (optional for preprocessing)
+Python
+Regular Expressions (re)
+PyTorch
+tiktoken (GPT-style tokenizer concept)
+NumPy (optional for preprocessing)

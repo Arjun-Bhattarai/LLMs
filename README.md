@@ -6,7 +6,6 @@ The pipeline includes cleaning text using regex, tokenizing into words, building
 
 Additionally, this project implements core Transformer building blocks from scratch, including **self-attention, causal (masked) attention, and multi-head attention**, to understand how modern LLMs operate internally.
 
-
 ---
 
 ## ⚙️ Preprocessing Pipeline
@@ -18,6 +17,7 @@ Additionally, this project implements core Transformer building blocks from scra
    - Convert text to lowercase
 
 3. **Tokenization**
+
 ```python
 import re
 tokens = re.findall(r"\b\w+\b", raw_data.lower())
@@ -31,12 +31,16 @@ tokens = re.findall(r"\b\w+\b", raw_data.lower())
    - Convert text ↔ token IDs
 
 ---
+
 ## 🧠 Implementations
+
 Self-Attention — dot-product attention scores, softmax normalization, and context vector computation
 Causal Attention — upper-triangular -inf masking for autoregressive (left-to-right) generation
 Multi-Head Attention — parallel attention heads via MultiHeadAttentionWrapper and full MultiHeadAttention implementation with head splitting, scaled attention, dropout, and output projection
 Dummy GPT Model — token embeddings, positional embeddings, transformer block placeholders, layer normalization placeholders, and vocabulary logits generatio
+
 ## 🚀 Key Features
+
 Regex-based text cleaning and word-level tokenization
 Vocabulary builder with <UNK> token handling
 Encode/decode pipeline with sliding window dataset creation
@@ -50,6 +54,7 @@ PyTorch DataLoader integration for next-token prediction training
 ---
 
 ## 📦Tech Stack
+
 Python
 Regular Expressions (re)
 PyTorch

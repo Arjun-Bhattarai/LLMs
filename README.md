@@ -31,13 +31,11 @@ tokens = re.findall(r"\b\w+\b", raw_data.lower())
    - Convert text ↔ token IDs
 
 ---
-
-## Implementations
+## 🧠 Implementations
 Self-Attention — dot-product attention scores, softmax normalization, and context vector computation
 Causal Attention — upper-triangular -inf masking for autoregressive (left-to-right) generation
 Multi-Head Attention — parallel attention heads via MultiHeadAttentionWrapper and full MultiHeadAttention implementation with head splitting, scaled attention, dropout, and output projection
-
-
+Dummy GPT Model — token embeddings, positional embeddings, transformer block placeholders, layer normalization placeholders, and vocabulary logits generatio
 ## 🚀 Key Features
 Regex-based text cleaning and word-level tokenization
 Vocabulary builder with <UNK> token handling
@@ -46,11 +44,12 @@ Token and positional embeddings using torch.nn.Embedding
 Self-attention implemented from scratch (dot-product, softmax, context vectors)
 Causal masked attention with upper-triangular -inf masking
 Multi-head attention implementation with parallel heads and concatenation
+Dummy GPT-style architecture implementation
 PyTorch DataLoader integration for next-token prediction training
 
 ---
 
-## 📦 Tech Stack
+## 📦Tech Stack
 Python
 Regular Expressions (re)
 PyTorch

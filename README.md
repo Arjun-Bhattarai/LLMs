@@ -35,36 +35,36 @@ tokens = re.findall(r"\b\w+\b", raw_data.lower())
 ## 🧠 Implementations
 
 -Self-Attention — dot-product attention scores, softmax normalization, and context vector computation
-Causal Attention — upper-triangular -inf masking for autoregressive (left-to-right) generation
-Multi-Head Attention — parallel attention heads via splitting, scaled attention, concatenation, and output projection
-Dummy GPT Model — token embeddings, positional embeddings, transformer block placeholders, and vocabulary logits generation
-Custom Layer Normalization — implemented LayerNorm from scratch using mean-variance normalization with learnable scale (gamma) and shift (beta) parameters
-GELU Activation Function — smooth probabilistic activation used in GPT, BERT, and modern LLMs instead of ReLU
-Feed Forward Neural Network (FFN) — linear expansion → GELU activation → projection back to embedding size
+-Causal Attention — upper-triangular -inf masking for autoregressive (left-to-right) generation
+-Multi-Head Attention — parallel attention heads via splitting, scaled attention, concatenation, and output projection
+-Dummy GPT Model — token embeddings, positional embeddings, transformer block placeholders, and vocabulary logits generation
+-Custom Layer Normalization — implemented LayerNorm from scratch using mean-variance normalization with learnable scale (gamma) and shift (beta) parameters
+-GELU Activation Function — smooth probabilistic activation used in GPT, BERT, and modern LLMs instead of ReLU
+-Feed Forward Neural Network (FFN) — linear expansion → GELU activation → projection back to embedding size
 ---
 
 ## 🚀 Key Features
 
 - Regex-based text cleaning and word-level tokenization
-Vocabulary builder with <UNK> token handling
-Encode/decode pipeline with sliding window dataset creation
-Token and positional embeddings using torch.nn.Embedding
-Self-attention implemented from scratch (dot-product, softmax, context vectors)
-Causal masked attention with upper-triangular -inf masking
-Multi-head attention implementation with parallel heads and concatenation
-Dummy GPT-style architecture implementation
-Custom LayerNorm implementation from scratch
-GELU activation implementation
-Transformer Feed Forward Network (FFN) implementation
-PyTorch DataLoader integration for next-token prediction training
+-Vocabulary builder with <UNK> token handling
+-Encode/decode pipeline with sliding window dataset creation
+-Token and positional embeddings using torch.nn.Embedding
+-Self-attention implemented from scratch (dot-product, softmax, context vectors)
+-Causal masked attention with upper-triangular -inf masking
+-Multi-head attention implementation with parallel heads and concatenation
+-Dummy GPT-style architecture implementation
+-Custom LayerNorm implementation from scratch
+-GELU activation implementation
+-Transformer Feed Forward Network (FFN) implementation
+-PyTorch DataLoader integration for next-token prediction training
 
 ---
 
 ## 📦 Tech Stack
 
-Python
-Regular Expressions (re)
-PyTorch
-Matplotlib
-NumPy (optional for preprocessing)
-tiktoken (GPT-style tokenizer concept)
+-Python
+-Regular Expressions (re)
+-PyTorch
+-Matplotlib
+-NumPy (optional for preprocessing)
+-tiktoken (GPT-style tokenizer concept)

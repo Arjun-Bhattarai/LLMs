@@ -61,9 +61,9 @@ tokens = re.findall(r"\b\w+\b", raw_data.lower())
 
 ## 📦 Tech Stack
 
--Python
--Regular Expressions (re)
--PyTorch
--Matplotlib
--NumPy (optional for preprocessing)
--tiktoken (GPT-style tokenizer concept)
+-Python<br>
+-Regular Expressions (re)<br>
+-PyTorch<br>
+-Matplotlib<br>
+-NumPy (optional for preprocessing)<br>
+-tiktoken (GPT-style tokenizer concept)<br>

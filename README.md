@@ -41,7 +41,6 @@ tokens = re.findall(r"\b\w+\b", raw_data.lower())
 -Custom Layer Normalization — implemented LayerNorm from scratch using mean-variance normalization with learnable scale (gamma) and shift (beta) parameters<br>
 -GELU Activation Function — smooth probabilistic activation used in GPT, BERT, and modern LLMs instead of ReLU<br>
 -Feed Forward Neural Network (FFN) — linear expansion → GELU activation → projection back to embedding size<br>
----
 
 ## 🚀 Key Features
 

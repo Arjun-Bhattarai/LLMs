@@ -41,7 +41,6 @@ Dummy GPT Model — token embeddings, positional embeddings, transformer block p
 Custom Layer Normalization — implemented LayerNorm from scratch using mean-variance normalization with learnable scale (gamma) and shift (beta) parameters
 GELU Activation Function — smooth probabilistic activation used in GPT, BERT, and modern LLMs instead of ReLU
 Feed Forward Neural Network (FFN) — linear expansion → GELU activation → projection back to embedding size
----
 
 ## 🚀 Key Features
 

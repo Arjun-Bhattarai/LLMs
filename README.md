@@ -34,15 +34,6 @@ tokens = re.findall(r"\b\w+\b", raw_data.lower())
 
 ## 🧠 Implementations
 
-<<<<<<< HEAD
--Self-Attention — dot-product attention scores, softmax normalization, and context vector computation
-Causal Attention — upper-triangular -inf masking for autoregressive (left-to-right) generation
-Multi-Head Attention — parallel attention heads via splitting, scaled attention, concatenation, and output projection
-Dummy GPT Model — token embeddings, positional embeddings, transformer block placeholders, and vocabulary logits generation
-Custom Layer Normalization — implemented LayerNorm from scratch using mean-variance normalization with learnable scale (gamma) and shift (beta) parameters
-GELU Activation Function — smooth probabilistic activation used in GPT, BERT, and modern LLMs instead of ReLU
-Feed Forward Neural Network (FFN) — linear expansion → GELU activation → projection back to embedding size
-=======
 -Self-Attention — dot-product attention scores, softmax normalization, and context vector computation<br>
 -Causal Attention — upper-triangular -inf masking for autoregressive (left-to-right) generation<br>
 -Multi-Head Attention — parallel attention heads via splitting, scaled attention, concatenation, and output projection<br>
@@ -50,11 +41,10 @@ Feed Forward Neural Network (FFN) — linear expansion → GELU activation → p
 -Custom Layer Normalization — implemented LayerNorm from scratch using mean-variance normalization with learnable scale (gamma) and shift (beta) parameters<br>
 -GELU Activation Function — smooth probabilistic activation used in GPT, BERT, and modern LLMs instead of ReLU<br>
 -Feed Forward Neural Network (FFN) — linear expansion → GELU activation → projection back to embedding size<br>
->>>>>>> d32e5bee31ce0b90e3ab52c4ca51995015993d3a
 
 ## 🚀 Key Features
 
-- Regex-based text cleaning and word-level tokenization<br>
+-Regex-based text cleaning and word-level tokenization<br>
 -Vocabulary builder with <UNK> token handling<br>
 -Encode/decode pipeline with sliding window dataset creation<br>
 -Token and positional embeddings using torch.nn.Embedding<br>

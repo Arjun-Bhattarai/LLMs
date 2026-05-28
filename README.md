@@ -1,69 +1,95 @@
-# LLM Tokenization & Preprocessing Project
+# 🦾 LLM Tokenization & Preprocessing Project
 
-This project demonstrates fundamental text preprocessing and tokenization techniques used in Large Language Models (LLMs). It explains how raw text is converted into numerical representations that machine learning models can understand.
+This project showcases essential text preprocessing and tokenization techniques fundamental to Large Language Models (LLMs)—demonstrating how raw text is transformed into numerical representations suitable for machine learning. The pipeline covers text cleaning, word tokenization, vocabulary creation (with `<UNK>` handling), the encoding-decoding process, and dives into both classic and modern LLM architectural components.
 
-The pipeline includes cleaning text using regex, tokenizing into words, building vocabulary, handling <UNK> tokens, and converting text into training-ready sequences. It also explores BPE concepts and PyTorch-based token embeddings.
-
-Additionally, this project implements core Transformer building blocks from scratch, including self-attention, causal (masked) attention, multi-head attention, dummy GPT architecture, custom Layer Normalization, GELU activation function, and Feed Forward Neural Networks (FFN) to understand how modern LLMs operate internally.
+In addition to tokenizer concepts (including BPE and tiktoken), this project implements core Transformer modules **built from scratch**: self-attention, causal (masked) attention, multi-head attention, a dummy GPT-style model, custom LayerNorm, the GELU activation, Feed-Forward Neural Network (FFN) blocks, and more. As an advanced extension, a deep neural network with GELU activation, residual (shortcut) connections, and gradient analysis is included to help understand the flow of information and gradients in deep models.
 
 ---
 
 ## ⚙️ Preprocessing Pipeline
 
 1. **Load Raw Text**
-   - Input dataset (corpus)
+   - Input your dataset (the corpus).
 
 2. **Text Normalization**
-   - Convert text to lowercase
+   - Convert to lowercase.
 
 3. **Tokenization**
-
-```python
-import re
-tokens = re.findall(r"\b\w+\b", raw_data.lower())
-```
+   ```python
+   import re
+   tokens = re.findall(r"\b\w+\b", raw_data.lower())
+   ```
 
 4. **Vocabulary Building**
-   - Map words → token IDs
-   - Handle unknown words using `<UNK>`
+   - Map words to token IDs.
+   - Handle out-of-vocabulary with `<UNK>`.
 
 5. **Encoding / Decoding**
-   - Convert text ↔ token IDs
+   - Convert text ↔ token IDs.
 
 ---
 
-## 🧠 Implementations
+## 🧠 Algorithm Implementations
 
--Self-Attention — dot-product attention scores, softmax normalization, and context vector computation<br>
--Causal Attention — upper-triangular -inf masking for autoregressive (left-to-right) generation<br>
--Multi-Head Attention — parallel attention heads via splitting, scaled attention, concatenation, and output projection<br>
--Dummy GPT Model — token embeddings, positional embeddings, transformer block placeholders, and vocabulary logits generation<br>
--Custom Layer Normalization — implemented LayerNorm from scratch using mean-variance normalization with learnable scale (gamma) and shift (beta) parameters<br>
--GELU Activation Function — smooth probabilistic activation used in GPT, BERT, and modern LLMs instead of ReLU<br>
--Feed Forward Neural Network (FFN) — linear expansion → GELU activation → projection back to embedding size<br>
+- **Self-Attention**
+  - Dot-product attention, softmax normalization, context vector calculation.
+- **Causal (Masked) Attention**
+  - Upper-triangular `-inf` masking for autoregressive language modeling.
+- **Multi-Head Attention**
+  - Parallel attention heads, scaling, concatenation, and output projection.
+- **Dummy GPT Model**
+  - Token and positional embeddings, transformer block structure, logit generation.
+- **Custom Layer Normalization**
+  - Implemented from scratch with learnable `gamma` and `beta`.
+- **GELU Activation Function**
+  - Probabilistic activation, replacing ReLU in modern LLMs.
+- **Feed-Forward Neural Network (FFN)**
+  - Linear expansion → GELU → projection back to embedding size.
+- **Deep Neural Network with Residual Connections & GELU**
+  - Residual (shortcut) connections ensure information/gradient flow in deep stacks.
+  - Integrated gradient analysis for deeper understanding.
+- **Tokenizer Concepts**
+  - Regex-based and BPE/tokenizer (tiktoken-inspired) approaches.
+- **Sliding Window Dataset Preparation**
+  - For next-token prediction training with DataLoader.
+
+---
 
 ## 🚀 Key Features
 
--Regex-based text cleaning and word-level tokenization<br>
--Vocabulary builder with <UNK> token handling<br>
--Encode/decode pipeline with sliding window dataset creation<br>
--Token and positional embeddings using torch.nn.Embedding<br>
--Self-attention implemented from scratch (dot-product, softmax, context vectors)<br>
--Causal masked attention with upper-triangular -inf masking<br>
--Multi-head attention implementation with parallel heads and concatenation<br>
--Dummy GPT-style architecture implementation<br>
--Custom LayerNorm implementation from scratch<br>
--GELU activation implementation<br>
--Transformer Feed Forward Network (FFN) implementation<br>
--PyTorch DataLoader integration for next-token prediction training<br>
+- Regex-based text cleaning & word-level tokenization.
+- Vocabulary builder with robust `<UNK>` handling.
+- Sliding-window encoding/decoding pipeline.
+- PyTorch `nn.Embedding` for token & positional embeddings.
+- Transformer building blocks from scratch:
+  - Self-attention, causal masking, multi-head attention.
+  - Feed-forward (FFN) blocks with GELU activation.
+  - Custom LayerNorm.
+  - Residual connections.
+- Dummy GPT-style architecture for direct experimentation.
+- PyTorch DataLoader integration for training.
+- Gradient analysis tools to inspect training dynamics in deep networks.
 
 ---
 
 ## 📦 Tech Stack
 
--Python<br>
--Regular Expressions (re)<br>
--PyTorch<br>
--Matplotlib<br>
--NumPy (optional for preprocessing)<br>
--tiktoken (GPT-style tokenizer concept)<br>
+- **Python**
+- **Regular Expressions** (`re`)
+- **PyTorch**
+- **Matplotlib** (visualization)
+- **NumPy** (for preprocessing, optional)
+- **tiktoken** (inspiration for tokenizer concepts)
+
+---
+
+## 📚 Learning Outcomes
+
+- Master LLM preprocessing and tokenizer fundamentals.
+- Understand Transformer inner workings through hands-on module implementations.
+- Practice building GPT-like models and components from scratch.
+- Visualize and analyze deep learning model gradients and residual flows.
+
+---
+
+*Explore the notebook and code to experiment with every stage—see how words become tokens, how transformers work internally, and how advanced techniques ensure deep models can learn effectively!*

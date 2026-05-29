@@ -52,6 +52,12 @@ In addition to tokenizer concepts (including BPE and tiktoken), this project imp
   - Regex-based and BPE/tokenizer (tiktoken-inspired) approaches.
 - **Sliding Window Dataset Preparation**
   - For next-token prediction training with DataLoader.
+- **TransformerBlock**
+  - Integrated MultiHeadAttention with causal masking and dropout.
+  - Added FeedForward (FFN) network with GELU activation.
+  - Applied LayerNorm before attention and feed-forward layers.
+  - Implemented Residual (shortcut) connections for stable gradient flow.
+  - Verified input/output tensor shapes with sample run.
 
 ---
 
@@ -69,6 +75,12 @@ In addition to tokenizer concepts (including BPE and tiktoken), this project imp
 - Dummy GPT-style architecture for direct experimentation.
 - PyTorch DataLoader integration for training.
 - Gradient analysis tools to inspect training dynamics in deep networks.
+- TransformerBlock
+  - Integrated MultiHeadAttention with causal masking and dropout.
+  - Added FeedForward (FFN) network with GELU activation.
+  - Applied LayerNorm before attention and feed-forward layers.
+  - Implemented Residual (shortcut) connections for stable gradient flow.
+  - Verified input/output tensor shapes with sample run.
 
 ---
 

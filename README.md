@@ -81,6 +81,11 @@ In addition to tokenizer concepts (including BPE and tiktoken), this project imp
   - Applied LayerNorm before attention and feed-forward layers.
   - Implemented Residual (shortcut) connections for stable gradient flow.
   - Verified input/output tensor shapes with sample run.
+- GPTModel embeddings, stacked TransformerBlocks, final norm, output head.  
+  - Verified input/output shapes.  
+  - Counted parameters and memory size.  
+  - Checked embedding/output layer dimensions.  
+  - Added GPT‑2 style weight tying analysis. 
 
 ---
 

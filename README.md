@@ -31,83 +31,66 @@ In addition to tokenizer concepts (including BPE and tiktoken), this project imp
 
 ## 🧠 Algorithm Implementations
 
-- **Self-Attention**
-  - Dot-product attention, softmax normalization, context vector calculation.
-- **Causal (Masked) Attention**
-  - Upper-triangular `-inf` masking for autoregressive language modeling.
-- **Multi-Head Attention**
-  - Parallel attention heads, scaling, concatenation, and output projection.
-- **Dummy GPT Model**
-  - Token and positional embeddings, transformer block structure, logit generation.
-- **Custom Layer Normalization**
-  - Implemented from scratch with learnable `gamma` and `beta`.
-- **GELU Activation Function**
-  - Probabilistic activation, replacing ReLU in modern LLMs.
-- **Feed-Forward Neural Network (FFN)**
-  - Linear expansion → GELU → projection back to embedding size.
-- **Deep Neural Network with Residual Connections & GELU**
-  - Residual (shortcut) connections ensure information/gradient flow in deep stacks.
-  - Integrated gradient analysis for deeper understanding.
-- **Tokenizer Concepts**
-  - Regex-based and BPE/tokenizer (tiktoken-inspired) approaches.
-- **Sliding Window Dataset Preparation**
-  - For next-token prediction training with DataLoader.
-- **TransformerBlock**
-  - Integrated MultiHeadAttention with causal masking and dropout.
-  - Added FeedForward (FFN) network with GELU activation.
-  - Applied LayerNorm before attention and feed-forward layers.
-  - Implemented Residual (shortcut) connections for stable gradient flow.
-  - Verified input/output tensor shapes with sample run.
-- **GPTModel** embeddings, stacked TransformerBlocks, final norm, output head.  
-
+- **Self-Attention** → dot-product attention, softmax normalization.  
+- **Causal Attention** → autoregressive masking with upper-triangular `-inf`.  
+- **Multi-Head Attention** → parallel heads, scaling, concatenation, projection.  
+- **Dummy GPT Model** → embeddings, transformer block, logits.  
+- **Custom LayerNorm** → learnable `gamma` and `beta`.  
+- **GELU Activation** → smooth nonlinear activation.  
+- **Feed-Forward Network (FFN)** → expand → GELU → project back.  
+- **Residual Connections** → shortcut paths for gradient flow.  
+- **Tokenizer Concepts** → regex, BPE, tiktoken-inspired.  
+- **Sliding Window Dataset** → sequences for next-token prediction.  
+- **TransformerBlock** → attention + FFN + LayerNorm + residuals.  
+- **GPTModel**  
+  - Embeddings, stacked TransformerBlocks, final norm, output head.  
+  - Verified input/output shapes.  
+  - Counted parameters and memory size.  
+  - Checked embedding/output layer dimensions.  
+  - GPT‑2 style weight tying analysis.  
+- **Text Generation Pipeline**  
+  - Implemented `generate_text_simple` for autoregressive generation.  
+  - Context cropping, logits extraction, softmax probability, argmax sampling.  
+  - Encoded starting context into token IDs and prepared tensor input.  
+  - Ran model in eval mode to generate new tokens.  
+  - Decoded output sequence back into human-readable text.  
+  - Verified output length and shapes during generation.  
 
 ---
 
 ## 🚀 Key Features
 
-- Regex-based text cleaning & word-level tokenization.
-- Vocabulary builder with robust `<UNK>` handling.
-- Sliding-window encoding/decoding pipeline.
-- PyTorch `nn.Embedding` for token & positional embeddings.
-- Transformer building blocks from scratch:
-  - Self-attention, causal masking, multi-head attention.
-  - Feed-forward (FFN) blocks with GELU activation.
-  - Custom LayerNorm.
-  - Residual connections.
-- Dummy GPT-style architecture for direct experimentation.
-- PyTorch DataLoader integration for training.
-- Gradient analysis tools to inspect training dynamics in deep networks.
-- TransformerBlock
-  - Integrated MultiHeadAttention with causal masking and dropout.
-  - Added FeedForward (FFN) network with GELU activation.
-  - Applied LayerNorm before attention and feed-forward layers.
-  - Implemented Residual (shortcut) connections for stable gradient flow.
-  - Verified input/output tensor shapes with sample run.
-- GPTModel embeddings, stacked TransformerBlocks, final norm, output head.  
-  - Verified input/output shapes.  
-  - Counted parameters and memory size.  
-  - Checked embedding/output layer dimensions.  
-  - Added GPT‑2 style weight tying analysis. 
+- Regex-based text cleaning & tokenization.  
+- Vocabulary builder with `<UNK>` handling.  
+- Encoding/decoding pipeline.  
+- PyTorch embeddings for tokens & positions.  
+- Transformer modules from scratch: attention, FFN, LayerNorm, residuals.  
+- Dummy GPT-style architecture for experimentation.  
+- Gradient analysis tools for deep networks.  
+- TransformerBlock with causal masking, dropout, GELU, residuals.  
+- GPTModel with parameter/memory analysis and weight tying.  
+- **Text Generation** → end-to-end pipeline: encoding, inference, decoding.  
 
 ---
 
 ## 📦 Tech Stack
 
-- **Python**
-- **Regular Expressions** (`re`)
-- **PyTorch**
-- **Matplotlib** (visualization)
-- **NumPy** (for preprocessing, optional)
-- **tiktoken** (inspiration for tokenizer concepts)
+- Python  
+- Regex (`re`)  
+- PyTorch  
+- NumPy  
+- Matplotlib  
+- tiktoken (concept inspiration)  
 
 ---
 
 ## 📚 Learning Outcomes
 
-- Master LLM preprocessing and tokenizer fundamentals.
-- Understand Transformer inner workings through hands-on module implementations.
-- Practice building GPT-like models and components from scratch.
-- Visualize and analyze deep learning model gradients and residual flows.
+- Master LLM preprocessing and tokenizer fundamentals.  
+- Understand Transformer internals through hands-on implementation.  
+- Build GPT-like models from scratch.  
+- Generate text sequences with context handling and decoding.  
+- Analyze parameters, memory, and gradient flow in deep networks.  
 
 ---
 

@@ -58,6 +58,17 @@ In addition to tokenizer concepts (including BPE and tiktoken), this project imp
 
 ---
 
+## 📊 Training & Evaluation (Implemented)
+
+- Created input–target token pairs for next-token prediction.
+- Ran forward pass using the model to get logits.
+- Flattened logits and targets for loss computation.
+- Applied **Cross-Entropy Loss** using `torch.nn.functional.cross_entropy`.
+- Computed **Perplexity** as `torch.exp(loss)`.
+- Compared predicted tokens with target tokens for evaluation.
+
+---
+
 ## 🚀 Key Features
 
 - Regex-based text cleaning & tokenization.  
@@ -69,7 +80,8 @@ In addition to tokenizer concepts (including BPE and tiktoken), this project imp
 - Gradient analysis tools for deep networks.  
 - TransformerBlock with causal masking, dropout, GELU, residuals.  
 - GPTModel with parameter/memory analysis and weight tying.  
-- **Text Generation** → end-to-end pipeline: encoding, inference, decoding.  
+- **Text Generation** → end-to-end pipeline: encoding, inference, decoding.
+-- Loss & perplexity computation  
 
 ---
 

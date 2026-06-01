@@ -113,15 +113,7 @@ Raw Text → Tokenization → Embeddings → Transformer Layers → Next Token P
 
 ---
 
-## ⭐ Future Improvements
 
-- Beam search decoding
-- Nucleus (top-p) sampling
-- Attention visualization
-- Training on larger datasets
-- Web or CLI interface for text generation
-
----
 
 ## 👨‍💻 Author
 

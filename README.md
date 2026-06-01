@@ -60,12 +60,19 @@ In addition to tokenizer concepts (including BPE and tiktoken), this project imp
 
 ## 📊 Training & Evaluation (Implemented)
 
-- Created input–target token pairs for next-token prediction.
-- Ran forward pass using the model to get logits.
-- Flattened logits and targets for loss computation.
-- Applied **Cross-Entropy Loss** using `torch.nn.functional.cross_entropy`.
-- Computed **Perplexity** as `torch.exp(loss)`.
-- Compared predicted tokens with target tokens for evaluation.
+- Created input–target token pairs for next-token prediction.  
+- Ran forward pass using the model to get logits.  
+- Flattened logits and targets for loss computation.  
+- Applied **Cross-Entropy Loss** using `torch.nn.functional.cross_entropy`.  
+- Computed **Perplexity** as `torch.exp(loss)`.  
+- Compared predicted tokens with target tokens for evaluation.  
+- Implemented **train/validation split (90/10 ratio)** with dataloaders.  
+- Added **sanity checks** to ensure enough tokens exist for each split.  
+- Counted total tokens across train and validation sets for verification.  
+- Defined helper functions `calc_loss_batch` and `calc_loss_loader` for average loss calculation.  
+- Configured **device selection** (CPU/GPU/MPS) and reproducibility seed.  
+- Evaluated model on both train and validation sets, printing loss values for monitoring.  
+
 
 ---
 
@@ -81,8 +88,7 @@ In addition to tokenizer concepts (including BPE and tiktoken), this project imp
 - TransformerBlock with causal masking, dropout, GELU, residuals.  
 - GPTModel with parameter/memory analysis and weight tying.  
 - **Text Generation** → end-to-end pipeline: encoding, inference, decoding.
--- Loss & perplexity computation  
-
+-**Training Evaluation** → integrated loss and perplexity metrics, dataloaders, and sanity checks.
 ---
 
 ## 📦 Tech Stack

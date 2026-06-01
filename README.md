@@ -1,115 +1,128 @@
-# 🦾 LLM Tokenization & Preprocessing Project
+# 🦾 LLM Tokenization & Transformer from Scratch
 
-This project showcases essential text preprocessing and tokenization techniques fundamental to Large Language Models (LLMs)—demonstrating how raw text is transformed into numerical representations suitable for machine learning. The pipeline covers text cleaning, word tokenization, vocabulary creation (with `<UNK>` handling), the encoding-decoding process, and dives into both classic and modern LLM architectural components.
+A complete end-to-end implementation of a **GPT-style Transformer** built entirely from scratch using PyTorch — transforming raw text into tokens and processing them through a full Transformer architecture for **next-token prediction and text generation**.
 
-In addition to tokenizer concepts (including BPE and tiktoken), this project implements core Transformer modules **built from scratch**: self-attention, causal (masked) attention, multi-head attention, a dummy GPT-style model, custom LayerNorm, the GELU activation, Feed-Forward Neural Network (FFN) blocks, and more. As an advanced extension, a deep neural network with GELU activation, residual (shortcut) connections, and gradient analysis is included to help understand the flow of information and gradients in deep models.
+---
+
+## 🚀 Highlights
+
+- GPT-style Transformer model built from scratch
+- Self-attention, causal attention, and multi-head attention
+- Custom LayerNorm, GELU, and Feed-Forward Network (FFN)
+- Full tokenization + preprocessing pipeline
+- Autoregressive text generation system
+- Cross-Entropy Loss and Perplexity evaluation
+- Train/validation pipeline with PyTorch DataLoaders
+- Parameter, tensor shape, and memory usage analysis
 
 ---
 
 ## ⚙️ Preprocessing Pipeline
 
-1. **Load Raw Text**
-   - Input your dataset (the corpus).
+**1. Load Raw Text** — Dataset (corpus) loaded as input text.
 
-2. **Text Normalization**
-   - Convert to lowercase.
+**2. Text Normalization** — Convert to lowercase for consistency.
 
-3. **Tokenization**
-   ```python
-   import re
-   tokens = re.findall(r"\b\w+\b", raw_data.lower())
-   ```
+**3. Tokenization**
+```python
+import re
+tokens = re.findall(r"\b\w+\b", raw_data.lower())
+```
 
-4. **Vocabulary Building**
-   - Map words to token IDs.
-   - Handle out-of-vocabulary with `<UNK>`.
+**4. Vocabulary Building** — Word-to-index mappings with `<UNK>` token for out-of-vocabulary words.
 
-5. **Encoding / Decoding**
-   - Convert text ↔ token IDs.
+**5. Encoding / Decoding** — Convert text ↔ token IDs for training and inference.
 
 ---
 
-## 🧠 Algorithm Implementations
+## 🧠 Model Architecture
 
-- **Self-Attention** → dot-product attention, softmax normalization.  
-- **Causal Attention** → autoregressive masking with upper-triangular `-inf`.  
-- **Multi-Head Attention** → parallel heads, scaling, concatenation, projection.  
-- **Dummy GPT Model** → embeddings, transformer block, logits.  
-- **Custom LayerNorm** → learnable `gamma` and `beta`.  
-- **GELU Activation** → smooth nonlinear activation.  
-- **Feed-Forward Network (FFN)** → expand → GELU → project back.  
-- **Residual Connections** → shortcut paths for gradient flow.  
-- **Tokenizer Concepts** → regex, BPE, tiktoken-inspired.  
-- **Sliding Window Dataset** → sequences for next-token prediction.  
-- **TransformerBlock** → attention + FFN + LayerNorm + residuals.  
-- **GPTModel**  
-  - Embeddings, stacked TransformerBlocks, final norm, output head.  
-  - Verified input/output shapes.  
-  - Counted parameters and memory size.  
-  - Checked embedding/output layer dimensions.  
-  - GPT‑2 style weight tying analysis.  
-- **Text Generation Pipeline**  
-  - Implemented `generate_text_simple` for autoregressive generation.  
-  - Context cropping, logits extraction, softmax probability, argmax sampling.  
-  - Encoded starting context into token IDs and prepared tensor input.  
-  - Ran model in eval mode to generate new tokens.  
-  - Decoded output sequence back into human-readable text.  
-  - Verified output length and shapes during generation.  
+### Attention Mechanisms
+| Component | Description |
+|---|---|
+| **Self-Attention** | Dot-product attention over token relationships |
+| **Causal Attention** | Masked — tokens attend only to previous positions |
+| **Multi-Head Attention** | Parallel heads capturing different representation subspaces |
 
----
+### Transformer Block
+Each block contains: Multi-Head Attention → Feed-Forward Network → Layer Normalization + Residual Connections.
 
-## 📊 Training & Evaluation (Implemented)
+### Key Components
+- **FFN**: `Linear → GELU → Linear` (expands then compresses feature dimension)
+- **LayerNorm**: Stabilizes training with learnable γ (gamma) and β (beta)
+- **GELU**: Smooth nonlinear activation used in modern Transformers
 
-- Created input–target token pairs for next-token prediction.  
-- Ran forward pass using the model to get logits.  
-- Flattened logits and targets for loss computation.  
-- Applied **Cross-Entropy Loss** using `torch.nn.functional.cross_entropy`.  
-- Computed **Perplexity** as `torch.exp(loss)`.  
-- Compared predicted tokens with target tokens for evaluation.  
-- Implemented **train/validation split (90/10 ratio)** with dataloaders.  
-- Added **sanity checks** to ensure enough tokens exist for each split.  
-- Counted total tokens across train and validation sets for verification.  
-- Defined helper functions `calc_loss_batch` and `calc_loss_loader` for average loss calculation.  
-- Configured **device selection** (CPU/GPU/MPS) and reproducibility seed.  
-- Evaluated model on both train and validation sets, printing loss values for monitoring.  
-
+### GPT-Style Model Stack
+```
+Token Embeddings + Positional Embeddings
+        ↓
+Stacked Transformer Blocks
+        ↓
+Final Layer Normalization
+        ↓
+Linear Projection → Vocabulary Logits
+(weight-tied with embedding layer)
+```
 
 ---
 
-## 🚀 Key Features
+## 🔄 Text Generation Pipeline
 
-- Regex-based text cleaning & tokenization.  
-- Vocabulary builder with `<UNK>` handling.  
-- Encoding/decoding pipeline.  
-- PyTorch embeddings for tokens & positions.  
-- Transformer modules from scratch: attention, FFN, LayerNorm, residuals.  
-- Dummy GPT-style architecture for experimentation.  
-- Gradient analysis tools for deep networks.  
-- TransformerBlock with causal masking, dropout, GELU, residuals.  
-- GPTModel with parameter/memory analysis and weight tying.  
-- **Text Generation** → end-to-end pipeline: encoding, inference, decoding.
--**Training Evaluation** → integrated loss and perplexity metrics, dataloaders, and sanity checks.
+```
+Input Text → Token IDs → Model → Next-Token Probabilities
+     ↑                                        ↓
+  Decoded Text ← Output Tokens ← Autoregressive Sampling
+```
+
+Causal masking ensures sequential, left-to-right generation.
+
+---
+
+## 📊 Training & Evaluation
+
+- Sliding window approach for input–target pair creation
+- **Loss**: Cross-Entropy | **Metric**: Perplexity = `exp(loss)`
+- **Train/Val split**: 90% / 10%
+- Helper functions: `calc_loss_batch`, `calc_loss_loader`
+- Evaluated on both training and validation sets
+- Dataset integrity and token coverage verified
+
+---
+
+## 🧪 Key Features
+
+- Regex-based tokenizer with custom `<UNK>` vocabulary
+- Token + positional embeddings in PyTorch
+- Full causal Transformer architecture from scratch
+- Modular, reusable design
+- End-to-end training and evaluation framework
+
 ---
 
 ## 📦 Tech Stack
 
-- Python  
-- Regex (`re`)  
-- PyTorch  
-- NumPy  
-- Matplotlib  
-- tiktoken (concept inspiration)  
+`Python` · `PyTorch` · `NumPy` · `Regex (re)` · `Matplotlib` · `tiktoken` (conceptual inspiration)
 
 ---
 
-## 📚 Learning Outcomes
+## 📌 Pipeline Summary
 
-- Master LLM preprocessing and tokenizer fundamentals.  
-- Understand Transformer internals through hands-on implementation.  
-- Build GPT-like models from scratch.  
-- Generate text sequences with context handling and decoding.  
-- Analyze parameters, memory, and gradient flow in deep networks.  
+```
+Raw Text → Tokenization → Embeddings → Transformer Layers → Next Token Prediction → Generated Text
+```
 
 ---
 
-*Explore the notebook and code to experiment with every stage—see how words become tokens, how transformers work internally, and how advanced techniques ensure deep models can learn effectively!*
+## ⭐ Future Improvements
+
+- Beam search decoding
+- Nucleus (top-p) sampling
+- Attention visualization
+- Training on larger datasets
+- Web or CLI interface for text generation
+
+---
+
+## 👨‍💻 Author
+
+Built as a deep learning project to understand how Large Language Models work internally.

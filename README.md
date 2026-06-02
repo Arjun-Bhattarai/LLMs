@@ -89,6 +89,17 @@ Causal masking ensures sequential, left-to-right generation.
 
 ---
 
+---
+## 🔁 Training Loop
+
+- `train_model_simple` — optimizer steps, token tracking, and periodic evaluation
+- `evaluate_model` — computes train/val loss at configurable intervals
+- `generate_and_print_sample` — generates text after each epoch to monitor quality
+- **Optimizer**: AdamW with device selection (CPU/GPU/MPS) and reproducibility seed
+- Execution time measured per training run
+- `plot_losses` — visualizes training vs validation loss across **epochs and tokens**
+---
+
 ## 🧪 Key Features
 
 - Regex-based tokenizer with custom `<UNK>` vocabulary
@@ -108,7 +119,7 @@ Causal masking ensures sequential, left-to-right generation.
 ## 📌 Pipeline Summary
 
 ```
-Raw Text → Tokenization → Embeddings → Transformer Layers → Next Token Prediction → Generated Text
+Raw Text → Tokenization → Embeddings → Transformer Layers → Next Token Prediction → Training Loop → Generated Text
 ```
 
 ---

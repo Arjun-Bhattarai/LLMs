@@ -85,7 +85,7 @@ Causal masking ensures sequential, left-to-right generation.
 - **Train/Val split**: 90% / 10%
 - Helper functions: `calc_loss_batch`, `calc_loss_loader`
 - Evaluated on both training and validation sets
-- Dataset integrity and token coverage verified
+- Dataset integrity and token coverage verified.
 
 ---
 

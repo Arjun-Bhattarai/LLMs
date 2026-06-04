@@ -6,126 +6,122 @@ A complete end-to-end implementation of a **GPT-style Transformer** built entire
 
 ## 🚀 Highlights
 
-- GPT-style Transformer model built from scratch
-- Self-attention, causal attention, and multi-head attention
-- Custom LayerNorm, GELU, and Feed-Forward Network (FFN)
-- Full tokenization + preprocessing pipeline
-- Autoregressive text generation system
-- Cross-Entropy Loss and Perplexity evaluation
-- Train/validation pipeline with PyTorch DataLoaders
-- Parameter, tensor shape, and memory usage analysis
+* **GPT-style Transformer** model built entirely from scratch.
+* **Self-attention, causal attention, and multi-head attention** mechanisms.
+* Custom **LayerNorm, GELU, and Feed-Forward Network (FFN)** layers.
+* Full **tokenization and preprocessing** pipeline.
+* Autoregressive text generation with **temperature scaling and top-k sampling**.
+* **Cross-Entropy Loss** and **Perplexity** evaluation metrics.
+* Train/validation pipeline integrated with **PyTorch DataLoaders**.
+* Comprehensive parameter, tensor shape, and memory usage analysis.
 
 ---
 
 ## ⚙️ Preprocessing Pipeline
 
-**1. Load Raw Text** — Dataset (corpus) loaded as input text.
-
-**2. Text Normalization** — Convert to lowercase for consistency.
-
-**3. Tokenization**
-```python
-import re
-tokens = re.findall(r"\b\w+\b", raw_data.lower())
-```
-
-**4. Vocabulary Building** — Word-to-index mappings with `<UNK>` token for out-of-vocabulary words.
-
-**5. Encoding / Decoding** — Convert text ↔ token IDs for training and inference.
+1.  **Load Raw Text** — The training dataset (corpus) is loaded as raw input text.
+2.  **Text Normalization** — Text is converted to lowercase for vocabulary consistency.
+3.  **Tokenization** — Words and punctuation are split using a regular expression:
+    ```python
+    import re
+    tokens = re.findall(r"\b\w+\b", raw_data.lower())
+    ```
+4.  **Vocabulary Building** — Word-to-index mappings are created, incorporating an `<UNK>` token to gracefully handle out-of-vocabulary words.
+5.  **Encoding / Decoding** — Utility functions convert raw text ↔ token IDs for seamless training and inference.
 
 ---
 
 ## 🧠 Model Architecture
 
 ### Attention Mechanisms
+
 | Component | Description |
-|---|---|
-| **Self-Attention** | Dot-product attention over token relationships |
-| **Causal Attention** | Masked — tokens attend only to previous positions |
-| **Multi-Head Attention** | Parallel heads capturing different representation subspaces |
+| :--- | :--- |
+| **Self-Attention** | Computes scaled dot-product attention to map token-to-token relationships. |
+| **Causal Attention** | Applies a lower-triangular mask ensuring tokens only attend to past and current positions. |
+| **Multi-Head Attention** | Runs multiple attention heads in parallel to capture diverse representation subspaces. |
 
 ### Transformer Block
-Each block contains: Multi-Head Attention → Feed-Forward Network → Layer Normalization + Residual Connections.
 
-### Key Components
-- **FFN**: `Linear → GELU → Linear` (expands then compresses feature dimension)
-- **LayerNorm**: Stabilizes training with learnable γ (gamma) and β (beta)
-- **GELU**: Smooth nonlinear activation used in modern Transformers
+Each block follows the standard decoder-only paradigm: 
+$$\text{Multi-Head Attention} \longrightarrow \text{Feed-Forward Network} \longrightarrow \text{LayerNorm + Residual Connections}$$
+
+* **FFN** — `Linear → GELU → Linear` architecture that expands the feature dimension (typically by $4\times$) and compresses it back.
+* **LayerNorm** — Stabilizes internal dynamics during training using learnable $\gamma$ (gamma) and $\beta$ (beta) parameters.
+* **GELU** — Smooth, non-linear activation function crucial for modern high-performing Transformers.
 
 ### GPT-Style Model Stack
-```
+---
 Token Embeddings + Positional Embeddings
-        ↓
+│
+▼
 Stacked Transformer Blocks
-        ↓
+│
+▼
 Final Layer Normalization
-        ↓
+│
+▼
 Linear Projection → Vocabulary Logits
-(weight-tied with embedding layer)
-```
-
+(Weight-tied with embedding layer)
 ---
 
 ## 🔄 Text Generation Pipeline
 
-```
-Input Text → Token IDs → Model → Next-Token Probabilities
-     ↑                                        ↓
-  Decoded Text ← Output Tokens ← Autoregressive Sampling
-```
+Input Text ──> Token IDs ──> Model ──> Next-Token Probabilities
+▲                                               │
+│                                               ▼
+Decoded Text <── Output Tokens <── Autoregressive Sampling
 
-Causal masking ensures sequential, left-to-right generation.
 
----
-
-## 📊 Training & Evaluation
-
-- Sliding window approach for input–target pair creation
-- **Loss**: Cross-Entropy | **Metric**: Perplexity = `exp(loss)`
-- **Train/Val split**: 90% / 10%
-- Helper functions: `calc_loss_batch`, `calc_loss_loader`
-- Evaluated on both training and validation sets
-- Dataset integrity and token coverage verified.
+> **Note:** Causal masking ensures that generation remains strictly autoregressive (sequential and left-to-right), preventing the model from looking ahead.
 
 ---
 
----
-## 🔁 Training Loop
+## 🎲 Sampling & Temperature Scaling
 
-- `train_model_simple` — optimizer steps, token tracking, and periodic evaluation
-- `evaluate_model` — computes train/val loss at configurable intervals
-- `generate_and_print_sample` — generates text after each epoch to monitor quality
-- **Optimizer**: AdamW with device selection (CPU/GPU/MPS) and reproducibility seed
-- Execution time measured per training run
-- `plot_losses` — visualizes training vs validation loss across **epochs and tokens**
+Controls the diversity, creativity, and randomness during text generation.
+
+* **`softmax_with_temperature`** — Scales raw logits before passing them to the softmax function. Low temperature pushes the model toward sharp, deterministic (greedy) outputs, while high temperature flattens the distribution for creative, diverse text.
+* **Top-k Filtering** — Restricts the sampling pool to the top `k` most probable tokens, effectively filtering out low-probability tail noise.
+* **Multinomial Sampling** — Randomly samples the next token proportionally based on the newly filtered and scaled probability distribution.
+* **EOS Handling** — Monitors for an end-of-sequence token to stop generation cleanly.
+* **Context Cropping** — Trims the active generation context to fit within the model's maximum allowed context window ($T$).
+* **Visualization** — Includes built-in Matplotlib bar charts tracking shifts in token probabilities across different temperature thresholds.
+
+
+Logits ──> Top-k Filter ──> Temperature Scale ──> Softmax ──> Multinomial Sample ──> Next Token
+
+
+vice selection (`cpu`, `cuda`, or `mps`) and explicit random seeds for reproducibility.
+* **`plot_losses`** — Generates clean plots visualizing training vs. validation loss decay across both training epochs and total tokens seen.
+
 ---
 
 ## 🧪 Key Features
 
-- Regex-based tokenizer with custom `<UNK>` vocabulary
-- Token + positional embeddings in PyTorch
-- Full causal Transformer architecture from scratch
-- Modular, reusable design
-- End-to-end training and evaluation framework
+* Regex-based custom tokenizer with custom `<UNK>` out-of-vocabulary handling.
+* From-scratch PyTorch implementations of Token + Learned Positional Embeddings.
+* Full decoder-only causal Transformer architecture.
+* Advanced generation utilities including temperature scaling and top-k sampling.
+* Modular, extensible, and clean object-oriented design.
 
 ---
 
 ## 📦 Tech Stack
 
-`Python` · `PyTorch` · `NumPy` · `Regex (re)` · `Matplotlib` · `tiktoken` (conceptual inspiration)
+* **Language:** `Python`
+* **Deep Learning:** `PyTorch`
+* **Data Processing:** `NumPy` · `Regex (re)`
+* **Visualization:** `Matplotlib`
+* **Conceptual Inspiration:** `tiktoken` / OpenAI GPT architectures
 
 ---
 
-## 📌 Pipeline Summary
-
-```
-Raw Text → Tokenization → Embeddings → Transformer Layers → Next Token Prediction → Training Loop → Generated Text
-```
+## 📌 Full Pipeline Summary
+Raw Text ──> Tokenization ──> Embeddings ──> Transformer Layers ──> Next Token Prediction ──> Training Loop ──> Generated Text
 
 ---
-
-
 
 ## 👨‍💻 Author
 
-Built as a deep learning project to understand how Large Language Models work internally.
+Built as a foundational deep learning project to pull back the curtain on Large Language Models, moving past APIs to implement their core mechanics entirely from first principles.

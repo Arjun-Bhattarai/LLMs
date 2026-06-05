@@ -11,6 +11,8 @@ A complete end-to-end implementation of a **GPT-style Transformer** built entire
 * Custom **LayerNorm, GELU, and Feed-Forward Network (FFN)** layers.
 * Full **tokenization and preprocessing** pipeline.
 * Autoregressive text generation with **temperature scaling and top-k sampling**.
+* **GPT-2 pretrained weight loading** across all four model variants.
+* Model and optimizer **checkpointing** for seamless training resumption.
 * **Cross-Entropy Loss** and **Perplexity** evaluation metrics.
 * Train/validation pipeline integrated with **PyTorch DataLoaders**.
 * Comprehensive parameter, tensor shape, and memory usage analysis.
@@ -19,15 +21,15 @@ A complete end-to-end implementation of a **GPT-style Transformer** built entire
 
 ## ⚙️ Preprocessing Pipeline
 
-1.  **Load Raw Text** — The training dataset (corpus) is loaded as raw input text.
-2.  **Text Normalization** — Text is converted to lowercase for vocabulary consistency.
-3.  **Tokenization** — Words and punctuation are split using a regular expression:
-    ```python
-    import re
-    tokens = re.findall(r"\b\w+\b", raw_data.lower())
-    ```
-4.  **Vocabulary Building** — Word-to-index mappings are created, incorporating an `<UNK>` token to gracefully handle out-of-vocabulary words.
-5.  **Encoding / Decoding** — Utility functions convert raw text ↔ token IDs for seamless training and inference.
+1. **Load Raw Text** — The training dataset (corpus) is loaded as raw input text.
+2. **Text Normalization** — Text is converted to lowercase for vocabulary consistency.
+3. **Tokenization** — Words and punctuation are split using a regular expression:
+```python
+import re
+tokens = re.findall(r"\b\w+\b", raw_data.lower())
+```
+4. **Vocabulary Building** — Word-to-index mappings are created, incorporating an `<UNK>` token to gracefully handle out-of-vocabulary words.
+5. **Encoding / Decoding** — Utility functions convert raw text ↔ token IDs for seamless training and inference.
 
 ---
 
@@ -43,7 +45,7 @@ A complete end-to-end implementation of a **GPT-style Transformer** built entire
 
 ### Transformer Block
 
-Each block follows the standard decoder-only paradigm: 
+Each block follows the standard decoder-only paradigm:
 $$\text{Multi-Head Attention} \longrightarrow \text{Feed-Forward Network} \longrightarrow \text{LayerNorm + Residual Connections}$$
 
 * **FFN** — `Linear → GELU → Linear` architecture that expands the feature dimension (typically by $4\times$) and compresses it back.
@@ -51,7 +53,6 @@ $$\text{Multi-Head Attention} \longrightarrow \text{Feed-Forward Network} \longr
 * **GELU** — Smooth, non-linear activation function crucial for modern high-performing Transformers.
 
 ### GPT-Style Model Stack
----
 Token Embeddings + Positional Embeddings
 │
 ▼
@@ -66,12 +67,10 @@ Linear Projection → Vocabulary Logits
 ---
 
 ## 🔄 Text Generation Pipeline
-
 Input Text ──> Token IDs ──> Model ──> Next-Token Probabilities
-▲                                               │
-│                                               ▼
+▲ │
+│ ▼
 Decoded Text <── Output Tokens <── Autoregressive Sampling
-
 
 > **Note:** Causal masking ensures that generation remains strictly autoregressive (sequential and left-to-right), preventing the model from looking ahead.
 
@@ -88,12 +87,41 @@ Controls the diversity, creativity, and randomness during text generation.
 * **Context Cropping** — Trims the active generation context to fit within the model's maximum allowed context window ($T$).
 * **Visualization** — Includes built-in Matplotlib bar charts tracking shifts in token probabilities across different temperature thresholds.
 
-
 Logits ──> Top-k Filter ──> Temperature Scale ──> Softmax ──> Multinomial Sample ──> Next Token
 
+---
 
-vice selection (`cpu`, `cuda`, or `mps`) and explicit random seeds for reproducibility.
-* **`plot_losses`** — Generates clean plots visualizing training vs. validation loss decay across both training epochs and total tokens seen.
+## 🏋️ Pretrained Weights & Checkpointing
+
+### GPT-2 Weight Loading
+
+Supports all four OpenAI GPT-2 variants via `download_and_load_gpt2`:
+
+| Variant | Params |
+| :--- | :--- |
+| `gpt2-small` | 124M |
+| `gpt2-medium` | 355M |
+| `gpt2-large` | 774M |
+| `gpt2-xl` | 1558M |
+
+Weights are mapped into the custom `GPTModel` via `load_weights_into_gpt()` — covering token/positional embeddings, QKV attention weights and biases, feed-forward layers, layer norms, and the output head. An `assign()` utility enforces shape safety and wraps tensors as `nn.Parameter`.
+
+### Checkpointing
+
+Full training state is persisted and restored:
+
+```python
+# Save
+torch.save({"model": model.state_dict(), "optimizer": optimizer.state_dict()}, "checkpoint.pt")
+
+# Resume
+checkpoint = torch.load("checkpoint.pt")
+model.load_state_dict(checkpoint["model"])
+optimizer.load_state_dict(checkpoint["optimizer"])
+```
+
+- **AdamW** optimizer with configurable `lr` and `weight_decay`
+- Resuming from a checkpoint restores both model weights and optimizer momentum/variance state
 
 ---
 
@@ -102,6 +130,8 @@ vice selection (`cpu`, `cuda`, or `mps`) and explicit random seeds for reproduci
 * Regex-based custom tokenizer with custom `<UNK>` out-of-vocabulary handling.
 * From-scratch PyTorch implementations of Token + Learned Positional Embeddings.
 * Full decoder-only causal Transformer architecture.
+* GPT-2 pretrained weight loading with shape-safe `assign()` utility.
+* Model + optimizer checkpointing for training resumption.
 * Advanced generation utilities including temperature scaling and top-k sampling.
 * Modular, extensible, and clean object-oriented design.
 
@@ -119,6 +149,10 @@ vice selection (`cpu`, `cuda`, or `mps`) and explicit random seeds for reproduci
 
 ## 📌 Full Pipeline Summary
 Raw Text ──> Tokenization ──> Embeddings ──> Transformer Layers ──> Next Token Prediction ──> Training Loop ──> Generated Text
+▲
+GPT-2 Pretrained Weights ─┘
+Checkpoint Save/Load
+
 
 ---
 

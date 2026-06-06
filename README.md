@@ -125,6 +125,26 @@ optimizer.load_state_dict(checkpoint["optimizer"])
 
 ---
 
+## 📊 Classification Fine-tuning — SMS Spam Detection
+
+Fine-tunes the GPT-style model on binary text classification using the SMS Spam Collection dataset.
+
+- **Data prep** — Loaded as `.tsv` into a Pandas DataFrame (`Label`, `Text` columns)
+- **Class balancing** — Ham randomly downsampled to match spam count; labels mapped to numeric (`ham=0`, `spam=1`)
+- **Splits** — Shuffled and divided via `random_split()` into `train.csv`, `validation.csv`, `test.csv`
+- **`SpamDataset`** — Custom PyTorch Dataset with tokenization, truncation, and padding; `max_length` derived from train set and shared across all splits
+- **DataLoaders** — `train_loader` with `shuffle=True`, `drop_last=True`; val/test loaders without shuffling; batch dims verified across all splits
+
+```
+Raw SMS Text ──> TSV Load ──> Class Balance ──> random_split()
+                                                      │
+                                            SpamDataset (tokenize + pad)
+                                                      │
+                                            DataLoader (batch + shuffle)
+                                                      │
+                                            GPT Fine-tune ──> Spam / Ham
+```
+
 ## 🧪 Key Features
 
 * Regex-based custom tokenizer with custom `<UNK>` out-of-vocabulary handling.

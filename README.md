@@ -1,203 +1,339 @@
-# 🦾 LLM Tokenization & Transformer from Scratch
+# 🦾 GPT-Style LLM from Scratch with GPT-2 Weight Loading and Fine-Tuning
 
-A complete end-to-end implementation of a **GPT-style Transformer** built entirely from scratch using PyTorch — transforming raw text into tokens and processing them through a full Transformer architecture for **next-token prediction and text generation**.
+A complete end-to-end implementation of a **GPT-style Large Language Model (LLM)** built entirely from scratch using PyTorch. This project covers the full pipeline from **tokenization and Transformer architecture design** to **pretraining, GPT-2 weight loading, text generation, checkpointing, and downstream fine-tuning for SMS spam classification**.
 
 ---
 
 ## 🚀 Highlights
 
-- **GPT-style Transformer** model built entirely from scratch
-- **Self-attention, causal attention, and multi-head attention** mechanisms
-- Custom **LayerNorm, GELU, and Feed-Forward Network (FFN)** layers
-- Full **tokenization and preprocessing** pipeline
-- Autoregressive text generation with **temperature scaling and top-k sampling**
-- **GPT-2 pretrained weight loading** across all four model variants
-- Model and optimizer **checkpointing** for seamless training resumption
-- **Cross-Entropy Loss** and **Perplexity** evaluation metrics
-- Train/validation pipeline integrated with **PyTorch DataLoaders**
-- Comprehensive parameter, tensor shape, and memory usage analysis
+* GPT-style decoder-only Transformer built entirely from scratch
+* Custom tokenization and preprocessing pipeline
+* Self-Attention, Causal Attention, and Multi-Head Attention implementations
+* Custom LayerNorm, GELU, and Feed-Forward Network (FFN) modules
+* Next-token prediction training pipeline
+* GPT-2 pretrained weight loading for all official model variants
+* Temperature scaling and Top-k sampling for text generation
+* Model and optimizer checkpointing for training resumption
+* Cross-Entropy Loss and Perplexity evaluation
+* Fine-tuning on supervised classification tasks
+* SMS Spam Detection using a fine-tuned GPT model
+* Modular and extensible PyTorch implementation
 
 ---
 
 ## ⚙️ Preprocessing Pipeline
 
-1. **Load Raw Text** — The training dataset (corpus) is loaded as raw input text
-2. **Text Normalization** — Text is converted to lowercase for vocabulary consistency
-3. **Tokenization** — Words and punctuation are split using a regular expression:
-   ```python
-   import re
-   tokens = re.findall(r"\b\w+\b", raw_data.lower())
-   ```
-4. **Vocabulary Building** — Word-to-index mappings are created, incorporating an `<UNK>` token to gracefully handle out-of-vocabulary words
-5. **Encoding / Decoding** — Utility functions convert raw text ↔ token IDs for seamless training and inference
+### 1. Load Raw Text
+
+The training corpus is loaded as raw text.
+
+### 2. Tokenization
+
+A custom tokenizer is implemented using regular expressions.
+
+```python
+import re
+
+tokens = re.findall(r"\b\w+\b", raw_text.lower())
+```
+
+### 3. Vocabulary Construction
+
+Word-to-index mappings are created with support for an `<UNK>` token to handle unseen words.
+
+### 4. Encoding & Decoding
+
+Utility functions convert:
+
+```text
+Raw Text ↔ Token IDs
+```
+
+for both training and inference.
+
+### 5. Embeddings
+
+* Token Embeddings
+* Learned Positional Embeddings
+
+are combined before entering the Transformer.
 
 ---
 
-## 🧠 Model Architecture
+## 🧠 Transformer Architecture
 
-### Attention Mechanisms
+### Self-Attention
 
-| Component | Description |
-| :--- | :--- |
-| **Self-Attention** | Computes scaled dot-product attention to map token-to-token relationships |
-| **Causal Attention** | Applies a lower-triangular mask ensuring tokens only attend to past and current positions |
-| **Multi-Head Attention** | Runs multiple attention heads in parallel to capture diverse representation subspaces |
+Computes relationships between tokens using scaled dot-product attention.
+
+### Causal Attention
+
+Applies a lower-triangular mask to ensure tokens only attend to past and current positions.
+
+### Multi-Head Attention
+
+Multiple attention heads run in parallel to capture information from different representation subspaces.
+
+---
 
 ### Transformer Block
 
-Each block follows the standard decoder-only paradigm:
+Each Transformer block follows:
 
-```
+```text
 Multi-Head Attention
+        ↓
+Residual Connection
+        ↓
+Layer Normalization
         ↓
 Feed-Forward Network
         ↓
-LayerNorm + Residual Connections
+Residual Connection
+        ↓
+Layer Normalization
 ```
 
-- **FFN** — `Linear → GELU → Linear` architecture that expands the feature dimension (typically by 4×) and compresses it back
-- **LayerNorm** — Stabilizes internal dynamics during training using learnable γ (gamma) and β (beta) parameters
-- **GELU** — Smooth, non-linear activation function crucial for modern high-performing Transformers
+Components include:
 
-### GPT-Style Model Stack
+* Multi-Head Attention
+* Feed-Forward Network (FFN)
+* GELU Activation
+* Layer Normalization
+* Residual Connections
 
-```
-Token Embeddings + Positional Embeddings
+---
+
+## 🏗️ GPT-Style Model
+
+```text
+Token Embeddings
+        +
+Positional Embeddings
         ↓
 Stacked Transformer Blocks
         ↓
-Final Layer Normalization
+Final LayerNorm
         ↓
-Linear Projection → Vocabulary Logits
-(Weight-tied with embedding layer)
+Linear Projection
+        ↓
+Vocabulary Logits
+```
+
+The model follows a decoder-only Transformer architecture similar to GPT.
+
+---
+
+## 🏋️ Pretraining
+
+The model is trained using:
+
+* Next-token prediction
+* Cross-Entropy Loss
+* AdamW Optimizer
+
+Training utilities include:
+
+* Training loss tracking
+* Validation loss tracking
+* Perplexity evaluation
+* Learning curve visualization
+
+---
+
+## 🎲 Text Generation
+
+Supports autoregressive generation using:
+
+### Temperature Scaling
+
+Controls randomness during generation.
+
+* Low Temperature → More deterministic
+* High Temperature → More creative
+
+### Top-k Sampling
+
+Restricts sampling to the top-k most likely tokens.
+
+### Multinomial Sampling
+
+Samples tokens according to probability distributions.
+
+### EOS Handling
+
+Stops generation when an end-of-sequence token is produced.
+
+---
+
+### Generation Pipeline
+
+```text
+Input Text
+    ↓
+Token IDs
+    ↓
+GPT Model
+    ↓
+Next-Token Probabilities
+    ↓
+Temperature Scaling
+    ↓
+Top-k Filtering
+    ↓
+Multinomial Sampling
+    ↓
+Generated Text
 ```
 
 ---
 
-## 🔄 Text Generation Pipeline
+## 🔄 GPT-2 Weight Loading
 
-```
-Input Text → Token IDs → Model → Next-Token Probabilities
-    ↑                                      ↓
-    ←───── Decoded Text ←───── Output Tokens ←───── Autoregressive Sampling
-```
+Supports loading all official GPT-2 variants:
 
-> **Note:** Causal masking ensures that generation remains strictly autoregressive (sequential and left-to-right), preventing the model from looking ahead.
+| Model        | Parameters |
+| ------------ | ---------- |
+| GPT-2 Small  | 124M       |
+| GPT-2 Medium | 355M       |
+| GPT-2 Large  | 774M       |
+| GPT-2 XL     | 1.5B       |
 
----
+The project includes utilities to:
 
-## 🎲 Sampling & Temperature Scaling
+* Download GPT-2 checkpoints
+* Map weights into the custom GPT implementation
+* Validate tensor shapes before assignment
 
-Controls the diversity, creativity, and randomness during text generation.
+Loaded components include:
 
-- **`softmax_with_temperature`** — Scales raw logits before passing them to the softmax function. Low temperature pushes the model toward sharp, deterministic (greedy) outputs, while high temperature flattens the distribution for creative, diverse text
-- **Top-k Filtering** — Restricts the sampling pool to the top `k` most probable tokens, effectively filtering out low-probability tail noise
-- **Multinomial Sampling** — Randomly samples the next token proportionally based on the newly filtered and scaled probability distribution
-- **EOS Handling** — Monitors for an end-of-sequence token to stop generation cleanly
-- **Context Cropping** — Trims the active generation context to fit within the model's maximum allowed context window (T)
-- **Visualization** — Includes built-in Matplotlib bar charts tracking shifts in token probabilities across different temperature thresholds
-
-### Sampling Pipeline
-
-```
-Logits → Top-k Filter → Temperature Scale → Softmax → Multinomial Sample → Next Token
-```
+* Token embeddings
+* Positional embeddings
+* Attention weights
+* Feed-forward layers
+* LayerNorm parameters
+* Output head
 
 ---
 
-## 🏋️ Pretrained Weights & Checkpointing
+## 💾 Checkpointing
 
-### GPT-2 Weight Loading
-
-Supports all four OpenAI GPT-2 variants via `download_and_load_gpt2`:
-
-| Variant | Parameters |
-| :--- | :--- |
-| `gpt2-small` | 124M |
-| `gpt2-medium` | 355M |
-| `gpt2-large` | 774M |
-| `gpt2-xl` | 1558M |
-
-Weights are mapped into the custom `GPTModel` via `load_weights_into_gpt()` — covering token/positional embeddings, QKV attention weights and biases, feed-forward layers, layer norms, and the output head. An `assign()` utility enforces shape safety and wraps tensors as `nn.Parameter`.
-
-### Checkpointing
-
-Full training state is persisted and restored:
-
-```python
-# Save
-torch.save(
-    {"model": model.state_dict(), "optimizer": optimizer.state_dict()}, 
-    "checkpoint.pt"
-)
-
-# Resume
-checkpoint = torch.load("checkpoint.pt")
-model.load_state_dict(checkpoint["model"])
-optimizer.load_state_dict(checkpoint["optimizer"])
-```
-
-- **AdamW** optimizer with configurable `lr` and `weight_decay`
-- Resuming from a checkpoint restores both model weights and optimizer momentum/variance state
+Full training state (model weights, optimizer state, momentum statistics) persisted and restored via `torch.save` / `torch.load` for seamless training resumption.
 
 ---
 
-## 📊 Classification Fine-tuning — SMS Spam Detection
+## 📊 Fine-Tuning for SMS Spam Classification
 
-Fine-tunes the GPT-style model on binary text classification using the SMS Spam Collection dataset.
+The pretrained GPT model is fine-tuned on the SMS Spam Collection dataset for binary text classification.
 
-- **Data prep** — Loaded as `.tsv` into a Pandas DataFrame (`Label`, `Text` columns)
-- **Class balancing** — Ham randomly downsampled to match spam count; labels mapped to numeric (`ham=0`, `spam=1`)
-- **Splits** — Shuffled and divided via `random_split()` into `train.csv`, `validation.csv`, `test.csv`
-- **`SpamDataset`** — Custom PyTorch Dataset with tokenization, truncation, and padding; `max_length` derived from train set and shared across all splits
-- **DataLoaders** — `train_loader` with `shuffle=True`, `drop_last=True`; val/test loaders without shuffling; batch dims verified across all splits
+### Dataset Preparation
 
-### Fine-tuning Pipeline
+* Downloaded from the UCI repository
+* Loaded into a Pandas DataFrame
+* Labels mapped:
 
+```text
+ham  → 0
+spam → 1
 ```
+
+### Class Balancing
+
+The majority class (ham) is randomly downsampled to match the spam class size.
+
+### Dataset Splits
+
+The dataset is shuffled and divided into:
+
+* Training Set
+* Validation Set
+* Test Set
+
+### Custom Dataset
+
+A custom `SpamDataset`:
+
+* Tokenizes messages
+* Truncates long sequences
+* Pads shorter sequences
+* Returns tensors suitable for GPT fine-tuning
+
+### DataLoaders
+
+* Training DataLoader (shuffle enabled)
+* Validation DataLoader
+* Test DataLoader
+
+---
+
+### Fine-Tuning Pipeline
+
+```text
 Raw SMS Text
     ↓
-TSV Load → Class Balance → random_split()
+Tokenization
     ↓
-SpamDataset (tokenize + pad)
+Padding / Truncation
     ↓
-DataLoader (batch + shuffle)
+SpamDataset
     ↓
-GPT Fine-tune
+DataLoader
     ↓
-Spam / Ham Classification
+GPT Fine-Tuning
+    ↓
+Spam / Ham Prediction
 ```
 
 ---
 
-## 🧪 Key Features
+## 📈 Results
 
-- Regex-based custom tokenizer with custom `<UNK>` out-of-vocabulary handling
-- From-scratch PyTorch implementations of Token + Learned Positional Embeddings
-- Full decoder-only causal Transformer architecture
-- GPT-2 pretrained weight loading with shape-safe `assign()` utility
-- Model + optimizer checkpointing for training resumption
-- Advanced generation utilities including temperature scaling and top-k sampling
-- Modular, extensible, and clean object-oriented design
+### SMS Spam Classification
+
+| Epoch | Train Accuracy | Validation Accuracy |
+| ----- | -------------- | ------------------- |
+| 1     | 70.0%          | 72.5%               |
+| 2     | 82.5%          | 85.0%               |
+| 3     | 90.0%          | 90.0%               |
+| 4     | 100.0%         | 97.5%               |
+| 5     | 100.0%         | 97.5%               |
+
+**Training Time:** 15.82 minutes
+
+The model successfully learned to distinguish spam from legitimate SMS messages while maintaining strong validation performance.
 
 ---
 
 ## 📦 Tech Stack
 
-- **Language:** Python
-- **Deep Learning:** PyTorch
-- **Data Processing:** NumPy · Regex (re)
-- **Visualization:** Matplotlib
-- **Conceptual Inspiration:** tiktoken / OpenAI GPT architectures
+### Language
+
+* Python
+
+### Deep Learning
+
+* PyTorch
+
+### Data Processing
+
+* NumPy
+* Pandas
+* Regular Expressions (re)
+
+### Visualization
+
+* Matplotlib
 
 ---
 
-## 📌 Full Pipeline Summary
+## 🔄 End-to-End Pipeline
 
-```
+```text
 Raw Text
     ↓
 Tokenization
+    ↓
+Vocabulary & Encoding
     ↓
 Embeddings
     ↓
@@ -205,15 +341,21 @@ Transformer Layers
     ↓
 Next Token Prediction
     ↓
-Training Loop ← GPT-2 Pretrained Weights
+Pretraining
     ↓
-Checkpoint Save/Load
+GPT-2 Weight Loading
     ↓
-Generated Text
+Checkpoint Save / Load
+    ↓
+Text Generation
+    ↓
+Fine-Tuning
+    ↓
+SMS Spam Classification
 ```
 
 ---
 
 ## 👨‍💻 Author
 
-Built as a foundational deep learning project to pull back the curtain on Large Language Models, moving past APIs to implement their core mechanics entirely from first principles.
+Built as a foundational deep learning project to understand and implement the core mechanics behind modern Large Language Models (LLMs), moving beyond APIs to develop every major component from first principles using PyTorch.

@@ -35,3 +35,8 @@ data/
 # OS files
 .DS_Store
 Thumbs.db
+
+# other
+temperature-plot
+4.66
+accuracy-plot

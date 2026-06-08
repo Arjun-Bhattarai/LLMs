@@ -1,3 +1,6 @@
+# Ignore all generated artifacts
+ignored/
+
 # Python cache
 __pycache__/
 *.pyc
@@ -12,31 +15,10 @@ env/
 # Jupyter
 .ipynb_checkpoints/
 
-# Model weights and checkpoints
+# Optional safety fallback
 *.pth
 *.pt
 *.ckpt
 *.bin
-
-# Downloaded GPT-2 weights
-gpt2/124M/
-
-# SMS Spam dataset
-sms_spam_collection.zip
-sms_spam_collection/
-
-# Dataset files
 *.csv
-train.csv
-test.csv
-validation.csv
-data/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# other
-temperature-plot
-4.66
-accuracy-plot
+*.zip

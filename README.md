@@ -1,6 +1,6 @@
 # 🦾 GPT-Style LLM from Scratch with GPT-2 Weight Loading and Fine-Tuning
 
-A complete end-to-end implementation of a **GPT-style Large Language Model (LLM)** built entirely from scratch using PyTorch. This project covers the full pipeline from **tokenization and Transformer architecture design** to **pretraining, GPT-2 weight loading, text generation, checkpointing, and downstream fine-tuning for SMS spam classification**.
+A complete end-to-end implementation of a **GPT-style Large Language Model (LLM)** built entirely from scratch using PyTorch. This project covers the full pipeline from **tokenization and Transformer architecture design** to **pretraining, GPT-2 weight loading, text generation, checkpointing, SMS spam classification fine-tuning, and instruction fine-tuning**.
 
 ---
 
@@ -17,6 +17,7 @@ A complete end-to-end implementation of a **GPT-style Large Language Model (LLM)
 * Cross-Entropy Loss and Perplexity evaluation
 * Fine-tuning on supervised classification tasks
 * SMS Spam Detection using a fine-tuned GPT model
+* Instruction fine-tuning pipeline with custom collate functions and ignore-index loss masking
 * Modular and extensible PyTorch implementation
 
 ---
@@ -304,6 +305,70 @@ The model successfully learned to distinguish spam from legitimate SMS messages 
 
 ---
 
+## 🎓 Instruction Fine-Tuning
+
+The GPT model is further fine-tuned on an instruction-following dataset using supervised fine-tuning (SFT), enabling the model to respond to structured prompts.
+
+### Dataset
+
+- Source: `instruction-data.json` (1,100 entries) from the [LLMs-from-scratch](https://github.com/rasbt/LLMs-from-scratch) repository
+- Each entry contains an `instruction`, optional `input`, and `output`
+
+### Dataset Splits
+
+```text
+85% Training | 10% Test | 5% Validation
+```
+
+### Prompt Format
+
+Entries are formatted as structured prompt-response pairs:
+
+```text
+Below is an instruction that describes a task.
+Write a response that appropriately completes the request.
+
+### Instruction:
+<instruction>
+
+### Input:
+<input>
+
+### Response:
+<output>
+```
+
+### Custom Dataset & Collation
+
+`InstructionDataset` pre-tokenizes each formatted entry end-to-end. A custom collate function handles batching with:
+
+- `<|endoftext|>` appended as sequence terminator
+- Variable-length sequences padded to batch maximum
+- Inputs: `tokens[:-1]` — Targets: `tokens[1:]` (next-token shift)
+- Padding tokens in targets replaced with `ignore_index=-100` to exclude them from loss
+
+### Instruction Fine-Tuning Pipeline
+
+```text
+Raw JSON Entries
+    ↓
+Prompt Formatting (Instruction + Input + Response)
+    ↓
+Tokenization (tiktoken GPT-2)
+    ↓
+InstructionDataset
+    ↓
+Custom Collate (padding + ignore_index masking)
+    ↓
+DataLoader
+    ↓
+GPT Instruction Fine-Tuning
+    ↓
+Instruction-Following Response Generation
+```
+
+---
+
 ## 📦 Tech Stack
 
 ### Language
@@ -349,9 +414,11 @@ Checkpoint Save / Load
     ↓
 Text Generation
     ↓
-Fine-Tuning
+Fine-Tuning (SMS Spam Classification)
     ↓
-SMS Spam Classification
+Instruction Fine-Tuning (SFT)
+    ↓
+Instruction-Following Generation
 ```
 
 ---

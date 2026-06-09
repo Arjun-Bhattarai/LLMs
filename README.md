@@ -347,6 +347,14 @@ Write a response that appropriately completes the request.
 - Inputs: `tokens[:-1]` — Targets: `tokens[1:]` (next-token shift)
 - Padding tokens in targets replaced with `ignore_index=-100` to exclude them from loss
 
+Collate function pre-configured via `functools.partial` with `device` and `allowed_max_length=1024`. Loss correctness verified — cross-entropy with `ignore_index` confirmed to skip padding tokens consistently across batches.
+
+### DataLoaders
+
+- Training DataLoader — shuffle enabled, `drop_last=True`
+- Validation DataLoader
+- Test DataLoader
+
 ### Instruction Fine-Tuning Pipeline
 
 ```text

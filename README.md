@@ -18,7 +18,7 @@ A complete end-to-end implementation of a **GPT-style Large Language Model (LLM)
 * Fine-tuning on supervised classification tasks
 * SMS Spam Detection using a fine-tuned GPT model
 * Instruction fine-tuning pipeline with custom collate functions and ignore-index loss masking
-* Modular and extensible PyTorch implementation
+* Modular and extensible PyTorch implementation.
 
 ---
 

@@ -1,6 +1,6 @@
 # 🦾 GPT-Style LLM from Scratch with GPT-2 Weight Loading and Fine-Tuning
 
-A complete end-to-end implementation of a **GPT-style Large Language Model (LLM)** built entirely from scratch using PyTorch. This project covers the full pipeline from **tokenization and Transformer architecture design** to **pretraining, GPT-2 weight loading, text generation, checkpointing, SMS spam classification fine-tuning, and instruction fine-tuning**.
+A complete end-to-end implementation of a **GPT-style Large Language Model (LLM)** built entirely from scratch using PyTorch. This project covers the full pipeline from **tokenization and Transformer architecture design** to **pretraining, GPT-2 weight loading, text generation, checkpointing, SMS spam classification fine-tuning, instruction fine-tuning, and automated response evaluation**.
 
 ---
 
@@ -18,7 +18,9 @@ A complete end-to-end implementation of a **GPT-style Large Language Model (LLM)
 * Fine-tuning on supervised classification tasks
 * SMS Spam Detection using a fine-tuned GPT model
 * Instruction fine-tuning pipeline with custom collate functions and ignore-index loss masking
-* Modular and extensible PyTorch implementation.
+* Supervised training loop with loss tracking, visualization, and timed evaluation
+* Automated response scoring via a local Ollama model with integer-output pipeline
+* Modular and extensible PyTorch implementation
 
 ---
 
@@ -377,6 +379,73 @@ Instruction-Following Response Generation
 
 ---
 
+## 🏃 Training & Evaluation Pipeline
+
+### Supervised Training Loop
+
+- Reproducibility seed set before training
+- Optimizer and device handling configured
+- Training and validation losses collected at periodic intervals
+- Tokens-seen counter tracked alongside epoch progress
+- Wall-clock timing measured end-to-end
+
+### Loss Visualization
+
+Training vs. validation loss plotted against both epochs and tokens seen for full learning curve diagnostics.
+
+### Response Generation & Comparison
+
+Model responses generated for all test set entries, compared against reference outputs, and stored for downstream scoring.
+
+### Checkpoint Saving
+
+Trained model state dictionary saved with a sanitized filename for future reuse via `torch.save`.
+
+---
+
+## 🤖 Automated Response Evaluation (Ollama)
+
+Instruction-following quality is evaluated automatically using a locally running Ollama model.
+
+### Process Monitoring
+
+`psutil` checks whether the Ollama process is active before any evaluation begins — raises an error immediately if not running.
+
+### Local Model Query
+
+`query_model` sends prompts to the local Ollama REST API via `urllib.request`:
+
+- Fixed seed and `temperature=0` for deterministic, reproducible scoring
+- Returns the model's raw text response
+
+### Integer Scoring Pipeline
+
+Evaluation responses are parsed to extract integer scores only, keeping results clean and analysis-ready. Conversion errors are caught and handled gracefully.
+
+### Batch Scoring
+
+`generate_model_scores` loops through all dataset entries, queries Ollama for a score per entry, and returns a collected results list.
+
+### Evaluation Pipeline
+
+```text
+Test Dataset Entries
+    ↓
+Ollama Process Check (psutil)
+    ↓
+Prompt Construction
+    ↓
+query_model (urllib → Ollama REST API)
+    ↓
+Integer Score Extraction
+    ↓
+generate_model_scores (batch loop)
+    ↓
+Aggregated Score Results
+```
+
+---
+
 ## 📦 Tech Stack
 
 ### Language
@@ -396,6 +465,12 @@ Instruction-Following Response Generation
 ### Visualization
 
 * Matplotlib
+
+### System & Evaluation
+
+* psutil
+* urllib (standard library)
+* Ollama (local LLM server)
 
 ---
 
@@ -427,6 +502,8 @@ Fine-Tuning (SMS Spam Classification)
 Instruction Fine-Tuning (SFT)
     ↓
 Instruction-Following Generation
+    ↓
+Automated Response Evaluation (Ollama)
 ```
 
 ---

@@ -517,3 +517,6 @@ Built as a foundational deep learning project to understand and implement the co
 Status: Completed
 
 This project has been successfully implemented end-to-end, covering the complete lifecycle of a GPT-style Large Language Model from scratch, including:
+
+## 🔗 Next Project
+[Reasoning-LLMs](https://github.com/Arjun-Bhattarai/Reasoning-LLMs) — extending this foundation to train LLMs to reason step-by-step.

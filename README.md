@@ -57,6 +57,7 @@ for both training and inference.
 ### 5. Embeddings
 
 * Token Embeddings
+
 * Learned Positional Embeddings
 
 are combined before entering the Transformer.

@@ -60,7 +60,7 @@ for both training and inference.
 
 * Learned Positional Embeddings
 
-are combined before entering the Transformer.
+are combined before entering the Transformer
 
 ---
 

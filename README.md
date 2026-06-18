@@ -24,7 +24,7 @@ A complete end-to-end implementation of a **GPT-style Large Language Model (LLM)
 
 ---
 
-## ⚙️ Preprocessing Pipeline
+## ⚙️ Preprocessing Pipeline:
 
 ### 1. Load Raw Text
 

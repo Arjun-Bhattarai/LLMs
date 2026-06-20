@@ -506,7 +506,30 @@ Instruction-Following Generation
     ↓
 Automated Response Evaluation (Ollama)
 ```
+## 🤖 MCP Integration
 
+Accessible to MCP-compatible AI assistants (Cursor, Claude Desktop, Windsurf, Cline, VS Code) via
+[GitMCP](https://gitmcp.io/Arjun-Bhattarai/LLMs).
+
+### Configuration
+
+```json
+{
+  "servers": {
+    "LLMs Docs": {
+      "type": "sse",
+      "url": "https://gitmcp.io/Arjun-Bhattarai/LLMs"
+    }
+  }
+}
+```
+
+Use it to:
+
+- Explain the Transformer architecture
+- Locate specific modules and implementations
+- Navigate the training and fine-tuning pipelines
+- Better understand the project structure
 ---
 
 ## 👨‍💻 Author

@@ -1,17 +1,17 @@
 import os
-import requests  # Make sure requests is installed
+import requests  # requests library file download garna use garxa
 import json
 import numpy as np
 import tensorflow as tf
-from tqdm import tqdm
+from tqdm import tqdm  # progress bar dekhauna
 
 def download_and_load_gpt2(model_size, models_dir):
-    # Validate model size
+    # Model size validate garna
     allowed_sizes = ("124M", "355M", "774M", "1558M")
     if model_size not in allowed_sizes:
         raise ValueError(f"Model size not in {allowed_sizes}")
 
-    # Define paths
+    #  Path define garna
     model_dir = os.path.join(models_dir, model_size)
     base_url = "https://openaipublic.blob.core.windows.net/gpt-2/models"
     filenames = [
@@ -20,16 +20,16 @@ def download_and_load_gpt2(model_size, models_dir):
         "model.ckpt.meta", "vocab.bpe"
     ]
 
-    # Download files
+    #  File download garna
     os.makedirs(model_dir, exist_ok=True)
     for filename in filenames:
         file_url = os.path.join(base_url, model_size, filename)
         file_path = os.path.join(model_dir, filename)
         download_file(file_url, file_path)
 
-    ## We have reached here until now ---> we have downloaded the files on our local machine.
+    ## yaha samma aai pugda sabai model files local ma download bhai sakxa
 
-    # Load settings and params
+    #  Settings ra params load garna
     tf_ckpt_path = tf.train.latest_checkpoint(model_dir)
     settings = json.load(open(os.path.join(model_dir, "hparams.json")))
     params = load_gpt2_params_from_tf_ckpt(tf_ckpt_path, settings)
@@ -38,59 +38,56 @@ def download_and_load_gpt2(model_size, models_dir):
 
 def download_file(url, destination):
     try:
-        # Send a GET request to download the file, disabling SSL verification
+        # File download request pathaune (SSL verify disable garera)
         response = requests.get(url, stream=True, verify=False)
 
-        # Get the total file size from headers, defaulting to 0 if not present
+        #File size header bata nikalne
         file_size = int(response.headers.get("content-length", 0))
 
-        # Check if file exists and has the same size
+        # File already exists bhaye size check garne
         if os.path.exists(destination):
             file_size_local = os.path.getsize(destination)
             if file_size == file_size_local:
                 print(f"File already exists and is up-to-date: {destination}")
                 return
 
-        # Define the block size for reading the file
-        block_size = 1024  # 1 Kilobyte
+        # Chunk size define garne (1KB)
+        block_size = 1024
 
-        # Initialize the progress bar with total file size
-        progress_bar_description = url.split("/")[-1]  # Extract filename from URL
+        # Progress bar setup garne
+        progress_bar_description = url.split("/")[-1]
         with tqdm(total=file_size, unit="iB", unit_scale=True, desc=progress_bar_description) as progress_bar:
-            # Open the destination file in binary write mode
             with open(destination, "wb") as file:
-                # Iterate over the file data in chunks
                 for chunk in response.iter_content(block_size):
-                    progress_bar.update(len(chunk))  # Update progress bar
-                    file.write(chunk)  # Write the chunk to the file
+                    progress_bar.update(len(chunk))
+                    file.write(chunk)
 
     except requests.exceptions.RequestException as e:
         print(f"Error downloading the file: {e}")
         print(f"Please check the URL: {url}")
 
 def load_gpt2_params_from_tf_ckpt(ckpt_path, settings):
-    # Initialize parameters dictionary with empty blocks for each layer
+    #  Parameters dictionary initialize garne (layers ko lagi)
     params = {"blocks": [{} for _ in range(settings["n_layer"])]}
 
-    # Iterate over each variable in the checkpoint
+    #  Checkpoint bhitra sabai variables iterate garne
     for name, _ in tf.train.list_variables(ckpt_path):
-        # Load the variable and remove singleton dimensions
         variable_array = np.squeeze(tf.train.load_variable(ckpt_path, name))
 
-        # Process the variable name to extract relevant parts
-        variable_name_parts = name.split("/")[1:]  # Skip the 'model/' prefix
+        #  Variable name process garne (model/ prefix hataune)
+        variable_name_parts = name.split("/")[1:]
 
-        # Identify the target dictionary for the variable
+        #  Target dictionary select garne
         target_dict = params
         if variable_name_parts[0].startswith("h"):
             layer_number = int(variable_name_parts[0][1:])
             target_dict = params["blocks"][layer_number]
 
-        # Recursively access or create nested dictionaries
+        # Nested dictionary create/access garne
         for key in variable_name_parts[1:-1]:
             target_dict = target_dict.setdefault(key, {})
 
-        # Assign the variable array to the last key
+        #  Last key ma variable assign garne
         last_key = variable_name_parts[-1]
         target_dict[last_key] = variable_array
 

@@ -24,7 +24,7 @@ A complete end-to-end implementation of a **GPT-style Large Language Model (LLM)
 
 ---
 
-## ⚙️ Preprocessing Pipeline
+## ⚙️ Preprocessing Pipeline:
 
 ### 1. Load Raw Text
 
@@ -57,9 +57,10 @@ for both training and inference.
 ### 5. Embeddings
 
 * Token Embeddings
+
 * Learned Positional Embeddings
 
-are combined before entering the Transformer.
+are combined before entering the Transformer
 
 ---
 
@@ -505,7 +506,30 @@ Instruction-Following Generation
     ↓
 Automated Response Evaluation (Ollama)
 ```
+## 🤖 MCP Integration
 
+Accessible to MCP-compatible AI assistants (Cursor, Claude Desktop, Windsurf, Cline, VS Code) via
+[GitMCP](https://gitmcp.io/Arjun-Bhattarai/LLMs).
+
+### Configuration
+
+```json
+{
+  "servers": {
+    "LLMs Docs": {
+      "type": "sse",
+      "url": "https://gitmcp.io/Arjun-Bhattarai/LLMs"
+    }
+  }
+}
+```
+
+Use it to:
+
+- Explain the Transformer architecture
+- Locate specific modules and implementations
+- Navigate the training and fine-tuning pipelines
+- Better understand the project structure
 ---
 
 ## 👨‍💻 Author
@@ -517,3 +541,6 @@ Built as a foundational deep learning project to understand and implement the co
 Status: Completed
 
 This project has been successfully implemented end-to-end, covering the complete lifecycle of a GPT-style Large Language Model from scratch, including:
+
+## 🔗 Next Project
+[Reasoning-LLMs](https://github.com/Arjun-Bhattarai/Reasoning-LLMs) — extending this foundation to train LLMs to reason step-by-step.

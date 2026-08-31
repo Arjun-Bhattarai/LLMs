@@ -27,6 +27,8 @@ def test_gpt_model_output_shape():
 
 def test_gpt_model_output_is_finite():
 
+    torch.manual_seed(123)
+
     model = GPTModel(GPT_CONFIG_124M)
 
     batch = torch.randint(

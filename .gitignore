@@ -1,26 +1,143 @@
-# GPT-2 weights
-gpt2/
-# Ignore all generated artifacts
-ignored/
+# ==========================================
+# Python
+# ==========================================
 
-# Python cache
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
+
+*.so
 
 # Virtual environments
-venv/
 .venv/
+venv/
 env/
+ENV/
 
+# Packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ==========================================
+# Environment / Secrets
+# ==========================================
+
+.env
+.env.*
+!.env.example
+
+# ==========================================
 # Jupyter
-.ipynb_checkpoints/
+# ==========================================
 
-# Optional safety fallback
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# ==========================================
+# IDE / Editor
+# ==========================================
+
+.vscode/
+.idea/
+
+# VS Code
+*.code-workspace
+
+# ==========================================
+# OS generated files
+# ==========================================
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==========================================
+# Logs
+# ==========================================
+
+*.log
+logs/
+
+# ==========================================
+# Python cache / test artifacts
+# ==========================================
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# ==========================================
+# Machine Learning / Model Artifacts
+# ==========================================
+
+# PyTorch checkpoints
 *.pth
 *.pt
 *.ckpt
+*.safetensors
 *.bin
-*.csv
+
+# TensorFlow checkpoints
+checkpoint
+*.index
+
+# ==========================================
+# Large GPT-2 downloaded models
+# ==========================================
+
+gpt2/
+
+# ==========================================
+# Datasets
+# ==========================================
+
 *.zip
+
+# Dataset folders
+sms_spam_collection/
+
+# Dataset files
+train.csv
+test.csv
+validation.csv
+
+# ==========================================
+# Generated plots / outputs
+# ==========================================
+
+*.png
+*.jpg
+*.jpeg
+
+# Keep workflow diagrams if they are documentation
+!docs/*.png
+
+*.pdf
+
+# Keep project documentation PDF
+!docs/*.pdf
+
+# ==========================================
+# Temporary files
+# ==========================================
+
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# ==========================================
+# Local experiments
+# ==========================================
+
+experiments/
+outputs/
+runs/
+wandb/
+mlruns/

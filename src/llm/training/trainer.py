@@ -2,8 +2,11 @@ import torch
 
 from llm.training.loss import calc_loss_batch, calc_loss_loader
 from llm.training.checkpoint import save_checkpoint
-from llm.decoding.sampling import generate_text_simple
-from llm.decoding.sampling import text_to_token_ids, token_ids_to_text
+from llm.decoding.sampling import (
+    generate_text_simple,
+    text_to_token_ids,
+    token_ids_to_text,
+)
 
 
 def train_model_simple(
@@ -19,18 +22,18 @@ def train_model_simple(
     tokenizer,
     checkpoint_path=None,
     config=None,
+    max_steps=None,
 ):
     """
     Train a GPT-style language model.
 
-    Performs:
-    - Forward propagation
-    - Loss calculation
-    - Backpropagation
-    - Optimizer updates
-    - Training/validation evaluation
-    - Sample text generation
-    - Optional checkpoint saving
+    Supports:
+    - Training
+    - Validation
+    - Periodic evaluation
+    - Sample generation
+    - Checkpoint saving
+    - Maximum training steps
     """
 
     train_losses = []
@@ -40,14 +43,19 @@ def train_model_simple(
     tokens_seen = 0
     global_step = -1
 
-    # Main training loop
     for epoch in range(num_epochs):
 
         model.train()
 
         for input_batch, target_batch in train_loader:
 
-            # Clear previous gradients
+            # Stop if maximum steps reached
+            if (
+                max_steps is not None
+                and global_step >= max_steps - 1
+            ):
+                break
+
             optimizer.zero_grad()
 
             # Calculate loss
@@ -61,22 +69,22 @@ def train_model_simple(
             # Backpropagation
             loss.backward()
 
-            # Update model parameters
+            # Update weights
             optimizer.step()
 
-            # Track training progress
+            # Track progress
             tokens_seen += input_batch.numel()
             global_step += 1
 
-            # Evaluate model periodically
+            # Evaluation
             if global_step % eval_freq == 0:
 
                 train_loss, val_loss = evaluate_model(
-                    model,
-                    train_loader,
-                    val_loader,
-                    device,
-                    eval_iter,
+                    model=model,
+                    train_loader=train_loader,
+                    val_loader=val_loader,
+                    device=device,
+                    eval_iter=eval_iter,
                 )
 
                 train_losses.append(train_loss)
@@ -90,34 +98,45 @@ def train_model_simple(
                     f"Val loss {val_loss:.3f}"
                 )
 
-        # Generate sample text after each epoch
+        # Generate sample after epoch
         generate_and_print_sample(
-            model,
-            tokenizer,
-            device,
-            start_context,
+            model=model,
+            tokenizer=tokenizer,
+            device=device,
+            start_context=start_context,
         )
 
-        # Save checkpoint after each epoch
-        if checkpoint_path is not None:
+        # Save checkpoint
+        if (
+            checkpoint_path is not None
+            and train_losses
+            and val_losses
+        ):
 
-            # Make sure at least one evaluation has happened
-            if train_losses and val_losses:
+            save_checkpoint(
+                model=model,
+                optimizer=optimizer,
+                epoch=epoch + 1,
+                global_step=global_step,
+                train_loss=train_losses[-1],
+                val_loss=val_losses[-1],
+                config=config,
+                path=checkpoint_path,
+            )
 
-                save_checkpoint(
-                    model=model,
-                    optimizer=optimizer,
-                    epoch=epoch + 1,
-                    global_step=global_step,
-                    train_loss=train_losses[-1],
-                    val_loss=val_losses[-1],
-                    config=config,
-                    path=checkpoint_path,
-                )
+            print(
+                f"Checkpoint saved: {checkpoint_path}"
+            )
 
-                print(
-                    f"Checkpoint saved: {checkpoint_path}"
-                )
+        # Stop after max steps
+        if (
+            max_steps is not None
+            and global_step >= max_steps - 1
+        ):
+            print(
+                f"\nReached max_steps={max_steps}."
+            )
+            break
 
     return (
         train_losses,
@@ -134,7 +153,7 @@ def evaluate_model(
     eval_iter,
 ):
     """
-    Evaluate the model on training and validation data.
+    Evaluate model on training and validation data.
     """
 
     model.eval()
@@ -155,7 +174,6 @@ def evaluate_model(
             num_batches=eval_iter,
         )
 
-    # Return model to training mode
     model.train()
 
     return train_loss, val_loss
@@ -168,15 +186,13 @@ def generate_and_print_sample(
     start_context,
 ):
     """
-    Generate and print a sample of text after an epoch.
+    Generate sample text after training epoch.
     """
 
     model.eval()
 
-    # Get context length from positional embeddings
     context_size = model.pos_emb.weight.shape[0]
 
-    # Convert starting text to token IDs
     encoded = text_to_token_ids(
         start_context,
         tokenizer,
@@ -191,7 +207,6 @@ def generate_and_print_sample(
             context_size=context_size,
         )
 
-    # Convert token IDs back to text
     decoded_text = token_ids_to_text(
         token_ids,
         tokenizer,
@@ -201,5 +216,4 @@ def generate_and_print_sample(
         decoded_text.replace("\n", " ")
     )
 
-    # Return to training mode
     model.train()

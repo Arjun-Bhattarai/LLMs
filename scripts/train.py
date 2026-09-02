@@ -5,10 +5,11 @@ import torch
 import tiktoken
 
 from llm.gpt.config import GPT_CONFIG_124M
+from llm.gpt.model import GPTModel
 from llm.preprocessing.dataset import create_data_loader
 from llm.training.loss import perplexity
 from llm.training.trainer import train_model_simple
-from llm.weights.gpt2_loader import load_pretrained_gpt2
+
 
 
 # Configuration
@@ -27,13 +28,13 @@ VERDICT_DATA_PATH = Path(
 
 # Training
 BATCH_SIZE = 1
-NUM_EPOCHS = 1
+NUM_EPOCHS = 4
 
 # IMPORTANT:
-# Start small for testing.
-MAX_STEPS = 2000 #116,294 steps lagxa fuull train huna so 2000 steps lekheko
+# Continue training from checkpoint
+MAX_STEPS = 10000 #116,294 steps lagxa fuull train huna so 2000 steps lekheko
 # Evaluation
-EVAL_FREQ = 250
+EVAL_FREQ = 500
 EVAL_ITER = 5
 
 # Learning rate for continued pretraining
@@ -159,11 +160,8 @@ print(
     "\nLoading pretrained GPT-2 124M..."
 )
 
-model = load_pretrained_gpt2(
-    model_size="124M",
-    models_dir="gpt2",
-    device=device,
-)
+model = GPTModel(GPT_CONFIG_124M)
+model.to(device)
 
 print(
     "GPT-2 pretrained weights loaded."
@@ -208,6 +206,7 @@ train_losses, val_losses, tokens_seen = (
         ),
         config=GPT_CONFIG_124M,
         max_steps=MAX_STEPS,
+        resume_from_checkpoint=str(CHECKPOINT_PATH),
     )
 )
 

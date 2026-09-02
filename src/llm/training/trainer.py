@@ -1,7 +1,7 @@
 import torch
 
 from llm.training.loss import calc_loss_batch, calc_loss_loader
-from llm.training.checkpoint import save_checkpoint
+from llm.training.checkpoint import save_checkpoint, load_checkpoint
 from llm.decoding.sampling import (
     generate_text_simple,
     text_to_token_ids,
@@ -23,6 +23,7 @@ def train_model_simple(
     checkpoint_path=None,
     config=None,
     max_steps=None,
+    resume_from_checkpoint=None,
 ):
     """
     Train a GPT-style language model.
@@ -34,6 +35,8 @@ def train_model_simple(
     - Sample generation
     - Checkpoint saving
     - Maximum training steps
+    - Resuming from checkpoint
+    - Automatic Mixed Precision (AMP)
     """
 
     train_losses = []
@@ -42,41 +45,102 @@ def train_model_simple(
 
     tokens_seen = 0
     global_step = -1
+    start_epoch = 0
 
-    for epoch in range(num_epochs):
+        # AMP
+    
+    use_amp = device.type == "cuda"
+
+    scaler = torch.amp.GradScaler(
+        "cuda",
+        enabled=use_amp,
+    )
+
+    if use_amp:
+        print("AMP enabled: FP16")
+
+        # Resume from checkpoint
+    
+    if resume_from_checkpoint is not None:
+
+        print(
+            f"\nResuming from checkpoint: "
+            f"{resume_from_checkpoint}"
+        )
+
+        checkpoint = load_checkpoint(
+            model=model,
+            optimizer=optimizer,
+            path=resume_from_checkpoint,
+            device=device,
+        )
+
+        global_step = checkpoint["global_step"]
+        start_epoch = checkpoint["epoch"]
+
+        print(
+            f"Resumed from step: {global_step}"
+        )
+
+        print(
+            f"Resumed from epoch: {start_epoch}"
+        )
+
+        # Training loop
+    
+    for epoch in range(start_epoch, num_epochs):
 
         model.train()
 
         for input_batch, target_batch in train_loader:
 
             # Stop if maximum steps reached
+
             if (
                 max_steps is not None
                 and global_step >= max_steps - 1
             ):
                 break
 
-            optimizer.zero_grad()
+            # Clear gradients
 
-            # Calculate loss
-            loss = calc_loss_batch(
-                input_batch,
-                target_batch,
-                model,
-                device,
+            optimizer.zero_grad(
+                set_to_none=True
             )
 
-            # Backpropagation
-            loss.backward()
+            # Forward pass with AMP
 
-            # Update weights
-            optimizer.step()
+            with torch.amp.autocast(
+                device_type="cuda",
+                dtype=torch.float16,
+                enabled=use_amp,
+            ):
+
+                loss = calc_loss_batch(
+                    input_batch,
+                    target_batch,
+                    model,
+                    device,
+                )
+
+            # Backward pass
+
+            scaler.scale(loss).backward()
+
+            # Optimizer update
+
+            scaler.step(optimizer)
+
+            scaler.update()
 
             # Track progress
+
             tokens_seen += input_batch.numel()
+
             global_step += 1
 
             # Evaluation
+
             if global_step % eval_freq == 0:
 
                 train_loss, val_loss = evaluate_model(
@@ -87,9 +151,17 @@ def train_model_simple(
                     eval_iter=eval_iter,
                 )
 
-                train_losses.append(train_loss)
-                val_losses.append(val_loss)
-                track_tokens_seen.append(tokens_seen)
+                train_losses.append(
+                    train_loss
+                )
+
+                val_losses.append(
+                    val_loss
+                )
+
+                track_tokens_seen.append(
+                    tokens_seen
+                )
 
                 print(
                     f"Ep {epoch + 1} "
@@ -98,7 +170,10 @@ def train_model_simple(
                     f"Val loss {val_loss:.3f}"
                 )
 
-        # Generate sample after epoch
+        # ========================================================
+        # Generate sample
+        # ========================================================
+
         generate_and_print_sample(
             model=model,
             tokenizer=tokenizer,
@@ -106,7 +181,10 @@ def train_model_simple(
             start_context=start_context,
         )
 
+        # ========================================================
         # Save checkpoint
+        # ========================================================
+
         if (
             checkpoint_path is not None
             and train_losses
@@ -125,17 +203,23 @@ def train_model_simple(
             )
 
             print(
-                f"Checkpoint saved: {checkpoint_path}"
+                f"Checkpoint saved: "
+                f"{checkpoint_path}"
             )
 
+        # ========================================================
         # Stop after max steps
+        # ========================================================
+
         if (
             max_steps is not None
             and global_step >= max_steps - 1
         ):
+
             print(
                 f"\nReached max_steps={max_steps}."
             )
+
             break
 
     return (

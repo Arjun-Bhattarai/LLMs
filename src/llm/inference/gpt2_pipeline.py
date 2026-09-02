@@ -2,6 +2,8 @@
 import torch
 import tiktoken
 
+from llm.gpt.config import GPT_CONFIG_124M
+from llm.gpt.model import GPTModel
 from llm.decoding.sampling import (
     generate,
     text_to_token_ids,
@@ -12,37 +14,75 @@ from llm.weights.gpt2_loader import load_pretrained_gpt2
 
 class GPT2Pipeline:
     """
-    Reusable inference interface for a pretrained GPT-2 model.
+    Reusable inference interface for GPT-2.
 
-    Handles:
-    - GPT-2 model loading
+    Supports:
+    - Original pretrained GPT-2
+    - Fine-tuned / continued-pretrained GPT-2 checkpoint
     - Tokenization
     - Text generation
-    - Decoding
     """
 
     def __init__(
         self,
         model_size="124M",
         models_dir="gpt2",
+        checkpoint_path=None,
         device=None,
     ):
-        # Select device
+        # Device
         self.device = device or torch.device(
             "cuda" if torch.cuda.is_available() else "cpu"
         )
 
-        # Load pretrained GPT-2 model
-        self.model = load_pretrained_gpt2(
-            model_size=model_size,
-            models_dir=models_dir,
-            device=self.device,
-        )
+                # Load model
+        
+        if checkpoint_path is not None:
 
-        # GPT-2 tokenizer
+            print(
+                f"Loading trained GPT-2 checkpoint: "
+                f"{checkpoint_path}"
+            )
+
+            # Your trained model uses the 124M architecture
+            if model_size != "124M":
+                raise ValueError(
+                    "Checkpoint loading currently supports "
+                    "only GPT-2 124M."
+                )
+
+            config = GPT_CONFIG_124M.copy()
+
+            self.model = GPTModel(config)
+
+            checkpoint = torch.load(
+                checkpoint_path,
+                map_location=self.device,
+            )
+
+            self.model.load_state_dict(
+                checkpoint["model_state_dict"]
+            )
+
+            self.model.to(self.device)
+            self.model.eval()
+
+        else:
+
+            print("Loading original pretrained GPT-2...")
+
+            self.model = load_pretrained_gpt2(
+                model_size=model_size,
+                models_dir=models_dir,
+                device=self.device,
+            )
+
+                # Tokenizer
+        
         self.tokenizer = tiktoken.get_encoding("gpt2")
 
-        # Store context length
+                # Context length
+        
         self.context_length = (
             self.model.pos_emb.weight.shape[0]
         )
@@ -56,17 +96,7 @@ class GPT2Pipeline:
         eos_id=None,
     ):
         """
-        Generate text from a user prompt.
-
-        Args:
-            prompt: Input text.
-            max_new_tokens: Number of tokens to generate.
-            temperature: Sampling temperature.
-            top_k: Number of highest-probability tokens considered.
-            eos_id: Optional end-of-sequence token ID.
-
-        Returns:
-            Generated text.
+        Generate text from a prompt.
         """
 
         # Prompt → token IDs
@@ -75,8 +105,9 @@ class GPT2Pipeline:
             self.tokenizer,
         ).to(self.device)
 
-        # Generate tokens
+        # Generation
         with torch.no_grad():
+
             output_ids = generate(
                 model=self.model,
                 idx=token_ids,

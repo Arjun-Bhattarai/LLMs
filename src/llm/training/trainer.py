@@ -1,7 +1,15 @@
 import torch
 
-from llm.training.loss import calc_loss_batch, calc_loss_loader
-from llm.training.checkpoint import save_checkpoint, load_checkpoint
+from llm.training.loss import (
+    calc_loss_batch,
+    calc_loss_loader,
+)
+
+from llm.training.checkpoint import (
+    save_checkpoint,
+    load_checkpoint,
+)
+
 from llm.decoding.sampling import (
     generate_text_simple,
     text_to_token_ids,
@@ -28,15 +36,16 @@ def train_model_simple(
     """
     Train a GPT-style language model.
 
-    Supports:
+    Features:
     - Training
     - Validation
     - Periodic evaluation
     - Sample generation
     - Checkpoint saving
     - Maximum training steps
-    - Resuming from checkpoint
+    - Checkpoint resuming
     - Automatic Mixed Precision (AMP)
+    - AMP GradScaler checkpointing
     """
 
     train_losses = []
@@ -47,8 +56,10 @@ def train_model_simple(
     global_step = -1
     start_epoch = 0
 
-        # AMP
-    
+ 
+    # Automatic Mixed Precision
+  
+
     use_amp = device.type == "cuda"
 
     scaler = torch.amp.GradScaler(
@@ -59,8 +70,10 @@ def train_model_simple(
     if use_amp:
         print("AMP enabled: FP16")
 
-        # Resume from checkpoint
     
+    # Resume from checkpoint
+    
+
     if resume_from_checkpoint is not None:
 
         print(
@@ -71,30 +84,45 @@ def train_model_simple(
         checkpoint = load_checkpoint(
             model=model,
             optimizer=optimizer,
+            scaler=scaler,
             path=resume_from_checkpoint,
             device=device,
         )
 
-        global_step = checkpoint["global_step"]
-        start_epoch = checkpoint["epoch"]
+        global_step = checkpoint[
+            "global_step"
+        ]
+
+        start_epoch = checkpoint[
+            "epoch"
+        ]
 
         print(
-            f"Resumed from step: {global_step}"
+            f"Resumed from step: "
+            f"{global_step}"
         )
 
         print(
-            f"Resumed from epoch: {start_epoch}"
+            f"Resumed from epoch: "
+            f"{start_epoch}"
         )
 
-        # Training loop
-    
-    for epoch in range(start_epoch, num_epochs):
+   
+    # Training loop
+  
+
+    for epoch in range(
+        start_epoch,
+        num_epochs,
+    ):
 
         model.train()
 
         for input_batch, target_batch in train_loader:
 
-            # Stop if maximum steps reached
+            
+            # Stop at maximum number of steps
+            
 
             if (
                 max_steps is not None
@@ -102,16 +130,20 @@ def train_model_simple(
             ):
                 break
 
+            
             # Clear gradients
+            
 
             optimizer.zero_grad(
                 set_to_none=True
             )
 
-            # Forward pass with AMP
+            
+            # Forward pass
+            
 
             with torch.amp.autocast(
-                device_type="cuda",
+                device_type=device.type,
                 dtype=torch.float16,
                 enabled=use_amp,
             ):
@@ -123,32 +155,44 @@ def train_model_simple(
                     device,
                 )
 
+            
             # Backward pass
+            
 
             scaler.scale(loss).backward()
 
+            
             # Optimizer update
+            
 
             scaler.step(optimizer)
 
             scaler.update()
 
+            
             # Track progress
+            
 
             tokens_seen += input_batch.numel()
 
             global_step += 1
 
-            # Evaluation
+            
+            # Periodic evaluation
+            
 
-            if global_step % eval_freq == 0:
+            if (
+                global_step % eval_freq == 0
+            ):
 
-                train_loss, val_loss = evaluate_model(
-                    model=model,
-                    train_loader=train_loader,
-                    val_loader=val_loader,
-                    device=device,
-                    eval_iter=eval_iter,
+                train_loss, val_loss = (
+                    evaluate_model(
+                        model=model,
+                        train_loader=train_loader,
+                        val_loader=val_loader,
+                        device=device,
+                        eval_iter=eval_iter,
+                    )
                 )
 
                 train_losses.append(
@@ -170,9 +214,9 @@ def train_model_simple(
                     f"Val loss {val_loss:.3f}"
                 )
 
-        # ========================================================
-        # Generate sample
-        # ========================================================
+        
+        # Generate sample after epoch
+        
 
         generate_and_print_sample(
             model=model,
@@ -181,9 +225,9 @@ def train_model_simple(
             start_context=start_context,
         )
 
-        # ========================================================
+        
         # Save checkpoint
-        # ========================================================
+        
 
         if (
             checkpoint_path is not None
@@ -194,6 +238,7 @@ def train_model_simple(
             save_checkpoint(
                 model=model,
                 optimizer=optimizer,
+                scaler=scaler,
                 epoch=epoch + 1,
                 global_step=global_step,
                 train_loss=train_losses[-1],
@@ -207,9 +252,9 @@ def train_model_simple(
                 f"{checkpoint_path}"
             )
 
-        # ========================================================
-        # Stop after max steps
-        # ========================================================
+        
+        # Stop after reaching max steps
+        
 
         if (
             max_steps is not None
@@ -237,7 +282,8 @@ def evaluate_model(
     eval_iter,
 ):
     """
-    Evaluate model on training and validation data.
+    Evaluate the model on training
+    and validation data.
     """
 
     model.eval()
@@ -270,12 +316,15 @@ def generate_and_print_sample(
     start_context,
 ):
     """
-    Generate sample text after training epoch.
+    Generate and print a sample after
+    each training epoch.
     """
 
     model.eval()
 
-    context_size = model.pos_emb.weight.shape[0]
+    context_size = (
+        model.pos_emb.weight.shape[0]
+    )
 
     encoded = text_to_token_ids(
         start_context,
@@ -297,7 +346,11 @@ def generate_and_print_sample(
     )
 
     print(
-        decoded_text.replace("\n", " ")
+        decoded_text.replace(
+            "\n",
+            " ",
+        )
     )
 
     model.train()
+

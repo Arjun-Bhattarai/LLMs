@@ -1,334 +1,532 @@
-# 🦾 GPT-Style LLM from Scratch with GPT-2 Weight Loading and Fine-Tuning
+# 🦾 GPT-Style LLM from Scratch — GPT-2 Architecture, Weight Loading & Continued Pretraining
 
-A complete end-to-end implementation of a **GPT-style Large Language Model (LLM)** built entirely from scratch using PyTorch. This project covers the full pipeline from **tokenization and Transformer architecture design** to **pretraining, GPT-2 weight loading, text generation, checkpointing, SMS spam classification fine-tuning, instruction fine-tuning, and automated response evaluation**.
+A complete end-to-end implementation of a **GPT-style decoder-only Large Language Model (LLM)** built with PyTorch from first principles.
+
+This project focuses on understanding the internal mechanics of modern LLMs rather than treating them as black-box APIs. It implements the Transformer architecture, GPT-style tokenization and generation, GPT-2 weight loading, checkpointing, continued pretraining, supervised fine-tuning, instruction fine-tuning, and automated evaluation.
+
+The project ultimately takes the custom GPT-2-compatible architecture, loads **OpenAI GPT-2 124M pretrained weights**, and performs **continued pretraining on WikiText-103**.
 
 ---
 
 ## 🚀 Highlights
 
-* GPT-style decoder-only Transformer built entirely from scratch
-* Custom tokenization and preprocessing pipeline
-* Self-Attention, Causal Attention, and Multi-Head Attention implementations
-* Custom LayerNorm, GELU, and Feed-Forward Network (FFN) modules
-* Next-token prediction training pipeline
-* GPT-2 pretrained weight loading for all official model variants
-* Temperature scaling and Top-k sampling for text generation
-* Model and optimizer checkpointing for training resumption
-* Cross-Entropy Loss and Perplexity evaluation
-* Fine-tuning on supervised classification tasks
-* SMS Spam Detection using a fine-tuned GPT model
-* Instruction fine-tuning pipeline with custom collate functions and ignore-index loss masking
-* Supervised training loop with loss tracking, visualization, and timed evaluation
-* Automated response scoring via a local Ollama model with integer-output pipeline
-* Modular and extensible PyTorch implementation
+* 🧠 GPT-style decoder-only Transformer implemented from scratch in PyTorch
+* 🔢 GPT-2 BPE tokenization using `tiktoken`
+* ⚡ Scaled dot-product self-attention
+* 🔒 Causal attention masking
+* 🧩 Multi-head attention
+* 📐 Custom LayerNorm implementation
+* 🔥 GELU activation
+* 🏗️ GPT-style Feed-Forward Networks
+* 🔁 Residual connections
+* 📍 Learned positional embeddings
+* 🎯 Next-token prediction
+* 📦 GPT-2 pretrained weight loading
+* 🔄 Continued pretraining on WikiText-103
+* 💾 Full model + optimizer checkpointing and training resumption
+* 🎲 Temperature, Top-k and multinomial sampling
+* 📊 Loss and perplexity evaluation
+* 📨 SMS spam classification fine-tuning
+* 🎓 Instruction fine-tuning with supervised learning
+* 🧮 Padding-aware `ignore_index` loss masking
+* 🤖 Automated response evaluation using a local Ollama model
+* 🧪 Deterministic baseline-vs-trained model evaluation
+* 🧱 Modular PyTorch architecture with tests
 
 ---
 
-## ⚙️ Preprocessing Pipeline:
+# 🧠 Architecture
 
-### 1. Load Raw Text
+The model follows a **decoder-only Transformer architecture inspired by GPT-2**.
 
-The training corpus is loaded as raw text.
+```text
+Input Text
+    │
+    ▼
+GPT-2 BPE Tokenization
+    │
+    ▼
+Token IDs
+    │
+    ├───────────────┐
+    ▼               ▼
+Token Embedding   Positional Embedding
+    │               │
+    └───────┬───────┘
+            ▼
+      Embedding Sum
+            │
+            ▼
+    ┌──────────────────────┐
+    │ Transformer Block ×12 │
+    │                      │
+    │ LayerNorm            │
+    │    ↓                 │
+    │ Causal Multi-Head    │
+    │ Self-Attention       │
+    │    ↓                 │
+    │ Residual Connection  │
+    │    ↓                 │
+    │ LayerNorm            │
+    │    ↓                 │
+    │ Feed-Forward Network │
+    │    ↓                 │
+    │ Residual Connection  │
+    └──────────────────────┘
+            │
+            ▼
+       Final LayerNorm
+            │
+            ▼
+      Output Projection
+            │
+            ▼
+      Vocabulary Logits
+            │
+            ▼
+       Next Token
+```
 
-### 2. Tokenization
+### GPT-2 124M Configuration
 
-A custom tokenizer is implemented using regular expressions.
+| Component           | Configuration |
+| ------------------- | ------------: |
+| Parameters          |   163,037,184 |
+| Transformer Layers  |            12 |
+| Attention Heads     |            12 |
+| Embedding Dimension |           768 |
+| Head Dimension      |            64 |
+| Context Length      |          1024 |
+| Vocabulary Size     |        50,257 |
+| FFN Dimension       |         3,072 |
+| Dropout             |           0.1 |
+| QKV Bias            |       Enabled |
+
+---
+
+# ⚙️ Tokenization & Preprocessing
+
+The project initially explores the fundamentals of language-model preprocessing using a custom tokenizer.
+
+### Basic Tokenization
 
 ```python
 import re
 
-tokens = re.findall(r"\b\w+\b", raw_text.lower())
+tokens = re.findall(
+    r"\b\w+\b",
+    raw_text.lower()
+)
 ```
 
-### 3. Vocabulary Construction
+The project then progresses to the **GPT-2 BPE tokenizer** using `tiktoken` for GPT-2-compatible training, evaluation, and generation.
 
-Word-to-index mappings are created with support for an `<UNK>` token to handle unseen words.
+```python
+import tiktoken
 
-### 4. Encoding & Decoding
+tokenizer = tiktoken.get_encoding("gpt2")
+```
 
-Utility functions convert:
+The GPT-2 tokenizer provides:
+
+* 50,257 vocabulary tokens
+* Subword-level tokenization
+* GPT-2-compatible token IDs
+* Consistent encoding across training and inference
+
+---
+
+# 🏗️ Transformer Implementation
+
+The Transformer is implemented modularly using PyTorch.
+
+## Self-Attention
+
+The implementation computes scaled dot-product attention:
 
 ```text
-Raw Text ↔ Token IDs
+Q = Query
+K = Key
+V = Value
+
+Attention(Q,K,V)
+        │
+        ▼
+   QKᵀ / √d
+        │
+        ▼
+   Causal Mask
+        │
+        ▼
+      Softmax
+        │
+        ▼
+        × V
 ```
 
-for both training and inference.
+## Causal Attention
 
-### 5. Embeddings
-
-* Token Embeddings
-
-* Learned Positional Embeddings
-
-are combined before entering the Transformer
-
----
-
-## 🧠 Transformer Architecture
-
-### Self-Attention
-
-Computes relationships between tokens using scaled dot-product attention.
-
-### Causal Attention
-
-Applies a lower-triangular mask to ensure tokens only attend to past and current positions.
-
-### Multi-Head Attention
-
-Multiple attention heads run in parallel to capture information from different representation subspaces.
-
----
-
-### Transformer Block
-
-Each Transformer block follows:
+A lower-triangular mask prevents a token from attending to future tokens.
 
 ```text
-Multi-Head Attention
-        ↓
-Residual Connection
-        ↓
-Layer Normalization
-        ↓
-Feed-Forward Network
-        ↓
-Residual Connection
-        ↓
-Layer Normalization
+Token 1 → ✓
+Token 2 → ✓ ✓
+Token 3 → ✓ ✓ ✓
+Token 4 → ✓ ✓ ✓ ✓
 ```
 
-Components include:
+This allows the model to perform autoregressive next-token prediction.
 
-* Multi-Head Attention
-* Feed-Forward Network (FFN)
-* GELU Activation
-* Layer Normalization
-* Residual Connections
+## Multi-Head Attention
 
----
-
-## 🏗️ GPT-Style Model
+The model uses multiple attention heads in parallel:
 
 ```text
-Token Embeddings
-        +
-Positional Embeddings
-        ↓
-Stacked Transformer Blocks
-        ↓
-Final LayerNorm
-        ↓
-Linear Projection
-        ↓
-Vocabulary Logits
+Input
+  │
+  ├── Head 1
+  ├── Head 2
+  ├── Head 3
+  ├── ...
+  └── Head 12
+       │
+       ▼
+   Concatenate
+       │
+       ▼
+   Projection
 ```
 
-The model follows a decoder-only Transformer architecture similar to GPT.
+Different heads can learn different relationships between tokens.
 
 ---
 
-## 🏋️ Pretraining
+# 🔄 GPT-2 Weight Loading
 
-The model is trained using:
+One of the major components of this project is loading **official pretrained GPT-2 weights into the custom PyTorch implementation**.
 
-* Next-token prediction
-* Cross-Entropy Loss
-* AdamW Optimizer
+The loader maps the original GPT-2 checkpoint tensors into the custom architecture.
 
-Training utilities include:
+```text
+Official GPT-2 Checkpoint
+          │
+          ▼
+   Weight Conversion
+          │
+          ▼
+Custom PyTorch GPT Model
+```
 
-* Training loss tracking
-* Validation loss tracking
-* Perplexity evaluation
-* Learning curve visualization
+The loader handles:
+
+* Token embeddings
+* Positional embeddings
+* Attention Q/K/V projections
+* Attention output projections
+* Feed-forward layers
+* LayerNorm scale and bias
+* Output projection
+
+The project also validates tensor shapes during weight assignment.
+
+### Supported GPT-2 Configurations
+
+| Model        | Parameters |
+| ------------ | ---------: |
+| GPT-2 Small  |       124M |
+| GPT-2 Medium |       355M |
+| GPT-2 Large  |       774M |
+| GPT-2 XL     |       1.5B |
+
+The primary experiment in this repository uses **GPT-2 124M**.
 
 ---
 
-## 🎲 Text Generation
+# 🏋️ Continued Pretraining on WikiText-103
 
-Supports autoregressive generation using:
+The main training experiment performs **continued pretraining**, rather than training a 124M-parameter language model from random initialization.
 
-### Temperature Scaling
+The training lineage is:
 
-Controls randomness during generation.
+```text
+Official OpenAI GPT-2 124M
+          │
+          ▼
+Pretrained GPT-2 Weights
+          │
+          ▼
+WikiText-103 Continued Pretraining
+          │
+          ▼
+Checkpoint Resume
+          │
+          ▼
+10,000 Optimization Steps
+```
 
-* Low Temperature → More deterministic
-* High Temperature → More creative
+### Dataset
 
-### Top-k Sampling
+WikiText-103 was used as the continued-pretraining corpus.
 
-Restricts sampling to the top-k most likely tokens.
+```text
+Training tokens:   119,085,168
+Validation tokens:     249,749
+Context length:           1,024
+```
 
-### Multinomial Sampling
+### Training Objective
 
-Samples tokens according to probability distributions.
+The model is trained using autoregressive next-token prediction:
 
-### EOS Handling
+```text
+Input:
+The history of
 
-Stops generation when an end-of-sequence token is produced.
+Target:
+history of the world
+```
+
+The training objective is standard cross-entropy language-model loss.
+
+### Training Configuration
+
+* Model: GPT-2 124M
+* Optimizer: AdamW
+* Learning rate: `1e-5`
+* Context length: 1024
+* Batch size: 1
+* Mixed precision: FP16 AMP
+* Dataset: WikiText-103
+* Maximum training steps: 10,000
+
+The final checkpoint contains:
+
+* Model state
+* Optimizer state
+* Training metadata
+* Validation loss
+* Training loss
+* Configuration
 
 ---
+
+# 📊 Continued Pretraining Results
+
+The strongest experiment compares the original pretrained GPT-2 against the **10K-step WikiText-103 continued-pretrained model** on the same deterministic validation batches.
+
+### WikiText-103 Validation
+
+| Metric             | Original GPT-2 | 10K Continued Pretraining |
+| ------------------ | -------------: | ------------------------: |
+| Cross-Entropy Loss |         3.2210 |                **2.7844** |
+| Perplexity         |        25.0531 |               **16.1897** |
+| PPL Improvement    |              — |                **35.38%** |
+| Loss Improvement   |              — |                **13.56%** |
+
+### Key Result
+
+> **WikiText-103 validation perplexity decreased from 25.05 to 16.19 — a 35.38% improvement after 10K continued-pretraining steps.**
+
+This provides a direct quantitative comparison between the original GPT-2 weights and the continued-pretrained model.
+
+---
+
+# 🔬 Domain-Shift Evaluation
+
+The model was also evaluated on **The Verdict**, a separate text corpus that was not the continued-pretraining target.
+
+| Metric     | Original GPT-2 | 10K WikiText GPT-2 |
+| ---------- | -------------: | -----------------: |
+| Loss       |         3.5328 |             4.3719 |
+| Perplexity |        34.2201 |            79.1920 |
+
+The increase in perplexity demonstrates an important property of continued pretraining:
+
+**Improving performance on a target corpus does not necessarily improve performance on every other domain.**
+
+The model became more adapted to WikiText-style text while becoming less suited to this separate evaluation corpus.
+
+This result is retained as part of the evaluation rather than hidden, providing a more complete picture of the experiment.
+
+---
+
+# 🎲 Text Generation
+
+The project supports autoregressive text generation.
 
 ### Generation Pipeline
 
 ```text
-Input Text
-    ↓
+Prompt
+  │
+  ▼
+GPT-2 Tokenizer
+  │
+  ▼
 Token IDs
-    ↓
+  │
+  ▼
 GPT Model
-    ↓
-Next-Token Probabilities
-    ↓
+  │
+  ▼
+Next-Token Logits
+  │
+  ▼
 Temperature Scaling
-    ↓
+  │
+  ▼
 Top-k Filtering
-    ↓
+  │
+  ▼
 Multinomial Sampling
-    ↓
-Generated Text
+  │
+  ▼
+Generated Token
+  │
+  └──────────► Repeat
+```
+
+### Temperature
+
+Controls randomness during generation:
+
+```text
+Low temperature
+      ↓
+More deterministic
+
+High temperature
+      ↓
+More diverse
+```
+
+### Top-k Sampling
+
+Restricts sampling to the `k` most probable tokens before sampling.
+
+The project also supports:
+
+* Multinomial sampling
+* Autoregressive decoding
+* Context-window management
+* EOS handling where applicable
+
+---
+
+# 💾 Checkpointing
+
+Training checkpoints store the complete training state.
+
+```text
+Checkpoint
+    │
+    ├── Model State
+    ├── Optimizer State
+    ├── Training Step
+    ├── Epoch
+    ├── Training Loss
+    ├── Validation Loss
+    └── Configuration
+```
+
+This allows training to resume without restarting from the beginning.
+
+The final WikiText checkpoint is:
+
+```text
+checkpoints/gpt2_wikitext.pt
+```
+
+Final checkpoint:
+
+```text
+Global step: 9999
+Epoch:       4
 ```
 
 ---
 
-## 🔄 GPT-2 Weight Loading
+# 📱 Fine-Tuning: SMS Spam Classification
 
-Supports loading all official GPT-2 variants:
+The pretrained GPT model is also fine-tuned for binary SMS classification using the SMS Spam Collection dataset.
 
-| Model        | Parameters |
-| ------------ | ---------- |
-| GPT-2 Small  | 124M       |
-| GPT-2 Medium | 355M       |
-| GPT-2 Large  | 774M       |
-| GPT-2 XL     | 1.5B       |
-
-The project includes utilities to:
-
-* Download GPT-2 checkpoints
-* Map weights into the custom GPT implementation
-* Validate tensor shapes before assignment
-
-Loaded components include:
-
-* Token embeddings
-* Positional embeddings
-* Attention weights
-* Feed-forward layers
-* LayerNorm parameters
-* Output head
-
----
-
-## 💾 Checkpointing
-
-Full training state (model weights, optimizer state, momentum statistics) persisted and restored via `torch.save` / `torch.load` for seamless training resumption.
-
----
-
-## 📊 Fine-Tuning for SMS Spam Classification
-
-The pretrained GPT model is fine-tuned on the SMS Spam Collection dataset for binary text classification.
-
-### Dataset Preparation
-
-* Downloaded from the UCI repository
-* Loaded into a Pandas DataFrame
-* Labels mapped:
+### Labels
 
 ```text
 ham  → 0
 spam → 1
 ```
 
-### Class Balancing
-
-The majority class (ham) is randomly downsampled to match the spam class size.
-
-### Dataset Splits
-
-The dataset is shuffled and divided into:
-
-* Training Set
-* Validation Set
-* Test Set
-
-### Custom Dataset
-
-A custom `SpamDataset`:
-
-* Tokenizes messages
-* Truncates long sequences
-* Pads shorter sequences
-* Returns tensors suitable for GPT fine-tuning
-
-### DataLoaders
-
-* Training DataLoader (shuffle enabled)
-* Validation DataLoader
-* Test DataLoader
-
----
-
-### Fine-Tuning Pipeline
+### Pipeline
 
 ```text
-Raw SMS Text
-    ↓
+Raw SMS
+   │
+   ▼
 Tokenization
-    ↓
+   │
+   ▼
 Padding / Truncation
-    ↓
+   │
+   ▼
 SpamDataset
-    ↓
+   │
+   ▼
 DataLoader
-    ↓
+   │
+   ▼
 GPT Fine-Tuning
-    ↓
+   │
+   ▼
 Spam / Ham Prediction
 ```
 
----
+### Dataset Processing
 
-## 📈 Results
+The pipeline includes:
 
-### SMS Spam Classification
+* Pandas-based dataset loading
+* Class balancing
+* Random shuffling
+* Train / validation / test splitting
+* Custom `SpamDataset`
+* Sequence truncation
+* Sequence padding
+* GPT-based classification
+
+### Classification Results
 
 | Epoch | Train Accuracy | Validation Accuracy |
-| ----- | -------------- | ------------------- |
-| 1     | 70.0%          | 72.5%               |
-| 2     | 82.5%          | 85.0%               |
-| 3     | 90.0%          | 90.0%               |
-| 4     | 100.0%         | 97.5%               |
-| 5     | 100.0%         | 97.5%               |
+| ----: | -------------: | ------------------: |
+|     1 |          70.0% |               72.5% |
+|     2 |          82.5% |               85.0% |
+|     3 |          90.0% |               90.0% |
+|     4 |         100.0% |               97.5% |
+|     5 |         100.0% |               97.5% |
 
-**Training Time:** 15.82 minutes
-
-The model successfully learned to distinguish spam from legitimate SMS messages while maintaining strong validation performance.
+**Training time:** 15.82 minutes
 
 ---
 
-## 🎓 Instruction Fine-Tuning
+# 🎓 Instruction Fine-Tuning
 
-The GPT model is further fine-tuned on an instruction-following dataset using supervised fine-tuning (SFT), enabling the model to respond to structured prompts.
+The project also implements supervised instruction fine-tuning (SFT).
 
-### Dataset
+The instruction dataset contains approximately 1,100 instruction-response examples.
 
-- Source: `instruction-data.json` (1,100 entries) from the [LLMs-from-scratch](https://github.com/rasbt/LLMs-from-scratch) repository
-- Each entry contains an `instruction`, optional `input`, and `output`
-
-### Dataset Splits
+Each sample contains:
 
 ```text
-85% Training | 10% Test | 5% Validation
+Instruction
+Input
+Response
 ```
 
 ### Prompt Format
 
-Entries are formatted as structured prompt-response pairs:
-
 ```text
 Below is an instruction that describes a task.
+
 Write a response that appropriately completes the request.
 
 ### Instruction:
@@ -341,177 +539,355 @@ Write a response that appropriately completes the request.
 <output>
 ```
 
-### Custom Dataset & Collation
-
-`InstructionDataset` pre-tokenizes each formatted entry end-to-end. A custom collate function handles batching with:
-
-- `<|endoftext|>` appended as sequence terminator
-- Variable-length sequences padded to batch maximum
-- Inputs: `tokens[:-1]` — Targets: `tokens[1:]` (next-token shift)
-- Padding tokens in targets replaced with `ignore_index=-100` to exclude them from loss
-
-Collate function pre-configured via `functools.partial` with `device` and `allowed_max_length=1024`. Loss correctness verified — cross-entropy with `ignore_index` confirmed to skip padding tokens consistently across batches.
-
-### DataLoaders
-
-- Training DataLoader — shuffle enabled, `drop_last=True`
-- Validation DataLoader
-- Test DataLoader
-
-### Instruction Fine-Tuning Pipeline
+### Dataset Split
 
 ```text
-Raw JSON Entries
-    ↓
-Prompt Formatting (Instruction + Input + Response)
-    ↓
-Tokenization (tiktoken GPT-2)
-    ↓
+85% Training
+10% Test
+5% Validation
+```
+
+### Custom Collation
+
+The instruction fine-tuning pipeline implements:
+
+* GPT-2 tokenization
+* End-of-sequence token handling
+* Variable-length sequence padding
+* Input/target next-token shifting
+* `ignore_index=-100` masking
+* Padding exclusion from loss calculation
+* Maximum context length of 1024
+
+The resulting training objective focuses the model on learning the response sequence while ignoring padded positions.
+
+### Pipeline
+
+```text
+Instruction Dataset
+        │
+        ▼
+Prompt Formatting
+        │
+        ▼
+GPT-2 Tokenization
+        │
+        ▼
 InstructionDataset
-    ↓
-Custom Collate (padding + ignore_index masking)
-    ↓
+        │
+        ▼
+Custom Collate Function
+        │
+        ├── Padding
+        ├── Next-token shifting
+        └── ignore_index masking
+        │
+        ▼
 DataLoader
-    ↓
-GPT Instruction Fine-Tuning
-    ↓
-Instruction-Following Response Generation
+        │
+        ▼
+Supervised Fine-Tuning
+        │
+        ▼
+Instruction-Following Generation
 ```
 
 ---
 
-## 🏃 Training & Evaluation Pipeline
+# 🏃 Training & Evaluation Infrastructure
 
-### Supervised Training Loop
+The repository contains reusable training and evaluation utilities.
 
-- Reproducibility seed set before training
-- Optimizer and device handling configured
-- Training and validation losses collected at periodic intervals
-- Tokens-seen counter tracked alongside epoch progress
-- Wall-clock timing measured end-to-end
+### Training Loop
 
-### Loss Visualization
+The training infrastructure supports:
 
-Training vs. validation loss plotted against both epochs and tokens seen for full learning curve diagnostics.
+* Reproducibility seeds
+* GPU/CPU device selection
+* Automatic mixed precision
+* Gradient scaling
+* Training loss tracking
+* Validation loss tracking
+* Tokens-seen tracking
+* Periodic evaluation
+* Checkpoint saving
+* Checkpoint resumption
+* Wall-clock timing
 
-### Response Generation & Comparison
+### Evaluation
 
-Model responses generated for all test set entries, compared against reference outputs, and stored for downstream scoring.
+The evaluation framework supports:
 
-### Checkpoint Saving
+* Cross-entropy loss
+* Perplexity
+* Deterministic validation batches
+* Baseline-vs-trained comparisons
+* Text generation comparisons
+* Dataset-specific evaluation
+* JSON result storage
+* Generation sample storage
 
-Trained model state dictionary saved with a sanitized filename for future reuse via `torch.save`.
+Evaluation results are stored in:
+
+```text
+results/
+├── evaluation.json
+└── generation_samples.txt
+```
 
 ---
 
-## 🤖 Automated Response Evaluation (Ollama)
+# 🤖 Automated Response Evaluation with Ollama
 
-Instruction-following quality is evaluated automatically using a locally running Ollama model.
-
-### Process Monitoring
-
-`psutil` checks whether the Ollama process is active before any evaluation begins — raises an error immediately if not running.
-
-### Local Model Query
-
-`query_model` sends prompts to the local Ollama REST API via `urllib.request`:
-
-- Fixed seed and `temperature=0` for deterministic, reproducible scoring
-- Returns the model's raw text response
-
-### Integer Scoring Pipeline
-
-Evaluation responses are parsed to extract integer scores only, keeping results clean and analysis-ready. Conversion errors are caught and handled gracefully.
-
-### Batch Scoring
-
-`generate_model_scores` loops through all dataset entries, queries Ollama for a score per entry, and returns a collected results list.
+Instruction-following responses can be evaluated automatically using a locally running Ollama model.
 
 ### Evaluation Pipeline
 
 ```text
-Test Dataset Entries
-    ↓
-Ollama Process Check (psutil)
-    ↓
+Test Dataset
+     │
+     ▼
+Ollama Process Check
+     │
+     ▼
 Prompt Construction
-    ↓
-query_model (urllib → Ollama REST API)
-    ↓
+     │
+     ▼
+Local Ollama API
+     │
+     ▼
+Response
+     │
+     ▼
 Integer Score Extraction
-    ↓
-generate_model_scores (batch loop)
-    ↓
-Aggregated Score Results
+     │
+     ▼
+Aggregated Evaluation
+```
+
+The implementation uses:
+
+* `psutil` for process monitoring
+* `urllib.request` for local API communication
+* Fixed generation settings for reproducibility
+* Integer-only score extraction
+* Graceful conversion error handling
+* Batch evaluation
+
+No external hosted LLM API is required for this evaluation pipeline.
+
+---
+
+# 🧪 Testing
+
+The repository contains tests covering major project components:
+
+```text
+tests/
+├── attention/
+├── decoding/
+├── finetuning/
+├── gpt/
+├── inference/
+├── instruction_tuning/
+├── preprocessing/
+├── training/
+├── transformer/
+└── weights/
+```
+
+The project is structured so that individual components can be tested independently.
+
+---
+
+# 📁 Project Structure
+
+```text
+LLMs/
+│
+├── checkpoints/
+│   ├── gpt2_wikitext-103.pt
+│   └── gpt_checkpoint.pt
+│
+├── data/
+│   ├── the-verdict.txt
+│   └── wikitext-103/
+│       ├── train.txt
+│       └── validation.txt
+│
+├── docs/
+│   ├── LLM_From_Scratch_Documentation.pdf
+│   └── LLM_From_Scratch_workflow.png
+│
+├── gpt2/
+│   ├── 124M/
+│   └── 355M/
+│
+├── notebooks/
+│   ├── attention/
+│   ├── decoding/
+│   ├── finetuning/
+│   ├── gpt/
+│   ├── instruction_tuning/
+│   ├── preprocessing/
+│   ├── training/
+│   ├── transformer/
+│   └── weights/
+│
+├── scripts/
+│   ├── benchmark_gpt2.py
+│   ├── evaluate.py
+│   ├── inference.py
+│   ├── prepare_wikitext.py
+│   ├── train.py
+│   └── verify_training_setup.py
+│
+├── src/
+│   └── llm/
+│       ├── attention/
+│       ├── decoding/
+│       ├── finetuning/
+│       ├── gpt/
+│       ├── inference/
+│       ├── instruction_tuning/
+│       ├── preprocessing/
+│       ├── training/
+│       ├── transformer/
+│       └── weights/
+│
+├── tests/
+│   ├── attention/
+│   ├── decoding/
+│   ├── finetuning/
+│   ├── gpt/
+│   ├── inference/
+│   ├── instruction_tuning/
+│   ├── preprocessing/
+│   ├── training/
+│   ├── transformer/
+│   └── weights/
+│
+├── results/
+│   ├── evaluation.json
+│   └── generation_samples.txt
+│
+└── workflow/
+    └── LLM_From_Scratch_workflow.png
 ```
 
 ---
 
-## 📦 Tech Stack
+# 🧰 Tech Stack
 
-### Language
+### Programming
 
 * Python
 
 ### Deep Learning
 
 * PyTorch
+* CUDA
+* Automatic Mixed Precision
+
+### NLP
+
+* tiktoken
+* GPT-2 BPE tokenizer
 
 ### Data Processing
 
 * NumPy
 * Pandas
-* Regular Expressions (re)
+* Regular Expressions
 
 ### Visualization
 
 * Matplotlib
 
-### System & Evaluation
+### Local AI
+
+* Ollama
+
+### System / Utilities
 
 * psutil
-* urllib (standard library)
-* Ollama (local LLM server)
+* urllib
+* JSON
+* PyTorch checkpointing
 
 ---
 
-## 🔄 End-to-End Pipeline
+# 🔄 Complete Project Pipeline
 
 ```text
-Raw Text
-    ↓
-Tokenization
-    ↓
-Vocabulary & Encoding
-    ↓
-Embeddings
-    ↓
-Transformer Layers
-    ↓
-Next Token Prediction
-    ↓
-Pretraining
-    ↓
-GPT-2 Weight Loading
-    ↓
-Checkpoint Save / Load
-    ↓
-Text Generation
-    ↓
-Fine-Tuning (SMS Spam Classification)
-    ↓
-Instruction Fine-Tuning (SFT)
-    ↓
-Instruction-Following Generation
-    ↓
-Automated Response Evaluation (Ollama)
+                    ┌──────────────────────┐
+                    │    Raw Text/Data     │
+                    └──────────┬───────────┘
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │ Tokenization &       │
+                    │ Preprocessing        │
+                    └──────────┬───────────┘
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │ GPT-Style Transformer│
+                    │ Implemented in PyTorch│
+                    └──────────┬───────────┘
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │ Official GPT-2       │
+                    │ Weight Loading       │
+                    └──────────┬───────────┘
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │ Continued Pretraining│
+                    │ on WikiText-103      │
+                    └──────────┬───────────┘
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │ Checkpointing &      │
+                    │ Training Resumption  │
+                    └──────────┬───────────┘
+                               │
+                ┌──────────────┴──────────────┐
+                ▼                             ▼
+       ┌─────────────────┐          ┌─────────────────┐
+       │ Text Generation │          │ Fine-Tuning     │
+       └────────┬────────┘          └────────┬────────┘
+                │                            │
+                │                   ┌────────┴────────┐
+                │                   ▼                 ▼
+                │            SMS Classification   Instruction SFT
+                │                                      │
+                │                                      ▼
+                │                              Response Generation
+                │                                      │
+                │                                      ▼
+                │                               Ollama Evaluation
+                │
+                └──────────────┬───────────────────────┘
+                               ▼
+                    ┌──────────────────────┐
+                    │ Evaluation & Results │
+                    └──────────────────────┘
 ```
-## 🤖 MCP Integration
 
-Accessible to MCP-compatible AI assistants (Cursor, Claude Desktop, Windsurf, Cline, VS Code) via
-[GitMCP](https://gitmcp.io/Arjun-Bhattarai/LLMs).
+---
 
-### Configuration
+# 🤖 MCP Integration
+
+The repository can be accessed by MCP-compatible AI development tools through GitMCP.
+
+Repository:
+
+`https://gitmcp.io/Arjun-Bhattarai/LLMs`
+
+Example configuration:
 
 ```json
 {
@@ -524,23 +900,78 @@ Accessible to MCP-compatible AI assistants (Cursor, Claude Desktop, Windsurf, Cl
 }
 ```
 
-Use it to:
+This can be used by compatible AI coding assistants to:
 
-- Explain the Transformer architecture
-- Locate specific modules and implementations
-- Navigate the training and fine-tuning pipelines
-- Better understand the project structure
+* Explain the Transformer implementation
+* Locate specific modules
+* Navigate the training pipeline
+* Understand fine-tuning components
+* Explore the project architecture
+
 ---
 
-## 👨‍💻 Author
+# 📌 Project Status
 
-Built as a foundational deep learning project to understand and implement the core mechanics behind modern Large Language Models (LLMs), moving beyond APIs to develop every major component from first principles using PyTorch.
+## ✅ Completed
 
-✅ Project Status
+The project currently covers the complete experimental lifecycle of a GPT-style language model:
 
-Status: Completed
+```text
+Architecture
+     ↓
+Tokenization
+     ↓
+Transformer Implementation
+     ↓
+GPT-2 Weight Loading
+     ↓
+Continued Pretraining
+     ↓
+Checkpointing
+     ↓
+Text Generation
+     ↓
+Classification Fine-Tuning
+     ↓
+Instruction Fine-Tuning
+     ↓
+Automated Evaluation
+```
 
-This project has been successfully implemented end-to-end, covering the complete lifecycle of a GPT-style Large Language Model from scratch, including:
+### Final GPT-2 Experiment
 
-## 🔗 Next Project
-[RAG From Scratch](https://github.com/Arjun-Bhattarai/RAG-from-scratch.git) — extending this foundation to train LLMs to reason step-by-step.
+```text
+Model:              GPT-2 124M
+Parameters:         163M
+Dataset:            WikiText-103
+Training:           Continued pretraining
+Optimization Steps: 10,000
+Validation PPL:     25.05 → 16.19
+PPL Improvement:    35.38%
+```
+
+The project demonstrates the progression from implementing Transformer components manually to loading a real pretrained GPT-2 model and adapting it to a new corpus.
+
+---
+
+# 👨‍💻 Author
+
+Built by **Arjun Bhattarai** as a deep learning systems project focused on understanding the internal mechanics of modern Large Language Models.
+
+Rather than relying exclusively on high-level LLM APIs, this project explores the underlying components directly:
+
+**attention → Transformer blocks → GPT architecture → pretrained weight loading → continued pretraining → fine-tuning → instruction tuning → evaluation.**
+
+---
+
+# 🔗 Next Project
+
+**RAG From Scratch**
+
+Extending this LLM foundation into a retrieval-augmented generation system covering retrieval, reranking, query transformation, advanced indexing, CRAG, Self-RAG, long-context processing, and local LLM inference.
+
+Repository:
+
+`https://github.com/Arjun-Bhattarai/RAG-from-scratch`
+
+````

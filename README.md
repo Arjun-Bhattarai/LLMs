@@ -973,6 +973,6 @@ Extending this LLM foundation into a retrieval-augmented generation system cover
 Repository:
 
 **[RAG-with-LangChain](https://github.com/Arjun-Bhattarai/RAG-with-LangChain)**
-)
+
 
 ````

@@ -1,0 +1,31 @@
+{
+    "model": {
+        "architecture": "GPT-2 124M",
+        "parameters": 163037184,
+        "training_method": "continued_pretraining",
+        "training_dataset": "WikiText-103",
+        "checkpoint": "checkpoints/gpt2_wikitext.pt",
+        "checkpoint_step": 9999,
+        "checkpoint_epoch": 4
+    },
+    "evaluation": {
+        "device": "cuda",
+        "context_length": 1024,
+        "wikitext_validation_batches": 20,
+        "the_verdict_batches": 5
+    },
+    "wikitext_103_validation": {
+        "baseline_loss": 3.22099609375,
+        "trained_loss": 2.784375,
+        "baseline_perplexity": 25.053062956033326,
+        "trained_perplexity": 16.189696153957538,
+        "loss_improvement_percent": 13.55546796834734,
+        "perplexity_improvement_percent": 35.37837595997936
+    },
+    "the_verdict": {
+        "baseline_loss": 3.5328125,
+        "trained_loss": 4.371875,
+        "baseline_perplexity": 34.2200763632455,
+        "trained_perplexity": 79.19197753976565
+    }
+}

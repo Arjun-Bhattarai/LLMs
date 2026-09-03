@@ -1,0 +1,60 @@
+GPT-2 124M GENERATION COMPARISON
+========================================================================
+
+Original model: OpenAI GPT-2 124M
+Trained model: GPT-2 124M continued pretraining on WikiText-103
+Checkpoint step: 9999
+
+------------------------------------------------------------------------
+PROMPT: The history of the world
+------------------------------------------------------------------------
+
+[Original GPT-2]
+
+The history of the world's most famous and most famous people is littered with stories of their lives, their achievements, their achievements, their achievements, their achievements, their achievements, their achievements, their achievements, their achievements, their achievements, their achievements, their achievements, their achievements, their achievements, their achievements, their achievements, their achievements, their achievements, their achievements, their achievements, their achievements, their achievements, their achievements
+
+[10K WikiText GPT-2]
+
+The history of the world 's largest oil reserves is a complex one . The world 's largest oil reserves are located in the Middle East , Africa , and Asia . The world 's largest oil reserves are located in the Middle East , Africa , and Asia . The world 's largest oil reserves are located in the Middle East , Africa , and Asia . The world 's largest oil reserves are located in the Middle East
+
+------------------------------------------------------------------------
+PROMPT: Artificial intelligence is
+------------------------------------------------------------------------
+
+[Original GPT-2]
+
+Artificial intelligence is a new field of research that has been in the works for a while now. It is a field that has been in the works for a while now. It is a field that has been in the works for a while now. It is a field that has been in the works for a while now. It is a field that has been in the works for a while now. It is a field
+
+[10K WikiText GPT-2]
+
+Artificial intelligence is a new field of research that has been gaining momentum in recent years . The field is now being explored in a number of different ways , including artificial intelligence , artificial intelligence , artificial intelligence , artificial intelligence , artificial intelligence , artificial intelligence , artificial intelligence , artificial intelligence , artificial intelligence , artificial intelligence , artificial intelligence , artificial intelligence , artificial intelligence , artificial intelligence , artificial intelligence , artificial intelligence , artificial intelligence , artificial
+
+------------------------------------------------------------------------
+PROMPT: The future of technology
+------------------------------------------------------------------------
+
+[Original GPT-2]
+
+The future of technology is not yet clear. But it is clear that the future of the Internet is not yet clear.
+
+The Internet is not yet clear.
+
+The Internet is not yet clear.
+
+The Internet is not yet clear.
+
+The Internet is not yet clear.
+
+The Internet is not yet clear.
+
+The Internet is not yet clear.
+
+The Internet is not
+
+[10K WikiText GPT-2]
+
+The future of technology is uncertain . 
+
+
+ = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+

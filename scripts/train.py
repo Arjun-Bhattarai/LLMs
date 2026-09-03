@@ -1,3 +1,4 @@
+
 import time
 from pathlib import Path
 
@@ -5,43 +6,48 @@ import torch
 import tiktoken
 
 from llm.gpt.config import GPT_CONFIG_124M
-from llm.gpt.model import GPTModel
+from llm.weights.gpt2_loader import load_pretrained_gpt2
 from llm.preprocessing.dataset import create_data_loader
-from llm.training.loss import perplexity
+from llm.training.loss import calc_loss_batch, perplexity
 from llm.training.trainer import train_model_simple
-
 
 
 # Configuration
 
-TRAIN_DATA_PATH = Path("data/wikitext-103/train.txt")
-VAL_DATA_PATH = Path("data/wikitext-103/validation.txt")
+TRAIN_DATA_PATH = Path(
+    "data/wikitext-103/train.txt"
+)
+
+VAL_DATA_PATH = Path(
+    "data/wikitext-103/validation.txt"
+)
+
+VERDICT_DATA_PATH = Path(
+    "data/the-verdict.txt"
+)
 
 CHECKPOINT_PATH = Path(
     "checkpoints/gpt2_wikitext.pt"
 )
 
-# Separate evaluation dataset
-VERDICT_DATA_PATH = Path(
-    "data/the-verdict.txt"
-)
 
-# Training
+# Training configuration
 BATCH_SIZE = 1
 NUM_EPOCHS = 4
+MAX_STEPS = 10_000
 
-# IMPORTANT:
-# Continue training from checkpoint
-MAX_STEPS = 10000 #116,294 steps lagxa fuull train huna so 2000 steps lekheko
+# Resume from checkpoint if it exists
+RESUME_TRAINING = True
+
 # Evaluation
 EVAL_FREQ = 500
 EVAL_ITER = 5
 
-# Learning rate for continued pretraining
+# Optimizer
 LEARNING_RATE = 1e-5
 WEIGHT_DECAY = 0.1
 
-# Sample prompt
+# Text generation
 START_CONTEXT = "The history of the world"
 
 
@@ -56,7 +62,7 @@ device = torch.device(
 print(f"Using device: {device}")
 
 
-# Load WikiText dataset
+# Load WikiText-103
 
 print("\nLoading WikiText dataset...")
 
@@ -73,6 +79,7 @@ with open(
     encoding="utf-8",
 ) as f:
     val_text = f.read()
+
 
 print(
     f"Training characters:   {len(train_text):,}"
@@ -95,6 +102,7 @@ val_tokens = len(
     tokenizer.encode(val_text)
 )
 
+
 print(
     f"Training tokens:        {train_tokens:,}"
 )
@@ -115,7 +123,7 @@ print(
 )
 
 
-# Create training DataLoader
+# Training DataLoader
 
 print("\nCreating training DataLoader...")
 
@@ -130,7 +138,7 @@ train_loader = create_data_loader(
 )
 
 
-# Create validation DataLoader
+# Validation DataLoader
 
 print("Creating validation DataLoader...")
 
@@ -156,15 +164,16 @@ print(
 
 # Load pretrained GPT-2
 
-print(
-    "\nLoading pretrained GPT-2 124M..."
+print("\nInitializing GPT-2 124M...")
+
+model = load_pretrained_gpt2(
+    model_size="124M",
+    models_dir="gpt2",
+    device=device,
 )
 
-model = GPTModel(GPT_CONFIG_124M)
-model.to(device)
-
 print(
-    "GPT-2 pretrained weights loaded."
+    "Pretrained GPT-2 124M loaded successfully."
 )
 
 
@@ -177,6 +186,49 @@ optimizer = torch.optim.AdamW(
 )
 
 
+# Checkpoint / Resume configuration
+
+resume_checkpoint = None
+
+if (
+    RESUME_TRAINING
+    and CHECKPOINT_PATH.exists()
+):
+    resume_checkpoint = str(
+        CHECKPOINT_PATH
+    )
+
+    print(
+        f"\nCheckpoint found: "
+        f"{CHECKPOINT_PATH}"
+    )
+
+    print(
+        "Training will resume "
+        "from the checkpoint."
+    )
+
+elif RESUME_TRAINING:
+    print(
+        "\nNo checkpoint found."
+    )
+
+    print(
+        "Training will start from "
+        "pretrained GPT-2 weights."
+    )
+
+else:
+    print(
+        "\nFresh training mode enabled."
+    )
+
+    print(
+        "Training will start from "
+        "pretrained GPT-2 weights."
+    )
+
+
 # Training
 
 print(
@@ -184,10 +236,11 @@ print(
 )
 
 print(
-    f"Maximum steps: {MAX_STEPS}"
+    f"Maximum steps: {MAX_STEPS:,}"
 )
 
 start_time = time.time()
+
 
 train_losses, val_losses, tokens_seen = (
     train_model_simple(
@@ -206,16 +259,19 @@ train_losses, val_losses, tokens_seen = (
         ),
         config=GPT_CONFIG_124M,
         max_steps=MAX_STEPS,
-        resume_from_checkpoint=str(CHECKPOINT_PATH),
+        resume_from_checkpoint=(
+            resume_checkpoint
+        ),
     )
 )
+
 
 training_time = (
     time.time() - start_time
 ) / 60
 
 
-# Training summary
+# Training Summary
 
 print(
     "\n========================================"
@@ -234,25 +290,38 @@ print(
     f"{training_time:.2f} minutes"
 )
 
-print(
-    f"Tokens processed: "
-    f"{tokens_seen[-1]:,}"
-    if tokens_seen
-    else "Tokens processed: 0"
-)
+
+if tokens_seen:
+    print(
+        f"Tokens processed: "
+        f"{tokens_seen[-1]:,}"
+    )
+else:
+    print(
+        "Tokens processed: 0"
+    )
 
 
 if train_losses and val_losses:
 
-    final_train_loss = train_losses[-1]
-    final_val_loss = val_losses[-1]
+    final_train_loss = (
+        train_losses[-1]
+    )
+
+    final_val_loss = (
+        val_losses[-1]
+    )
 
     train_ppl = perplexity(
-        torch.tensor(final_train_loss)
+        torch.tensor(
+            final_train_loss
+        )
     )
 
     val_ppl = perplexity(
-        torch.tensor(final_val_loss)
+        torch.tensor(
+            final_val_loss
+        )
     )
 
     print(
@@ -282,7 +351,7 @@ print(
 )
 
 
-# Test on The Verdict
+# The Verdict Evaluation
 
 print(
     "\n========================================"
@@ -318,32 +387,27 @@ verdict_loader = create_data_loader(
 
 model.eval()
 
+verdict_loss = 0.0
+batches = 0
+
+
 with torch.no_grad():
 
-    verdict_loss = 0.0
+    for input_batch, target_batch in (
+        verdict_loader
+    ):
 
-    batches = 0
-
-    for input_batch, target_batch in verdict_loader:
-
-        loss = (
-            __import__(
-                "llm.training.loss",
-                fromlist=["calc_loss_batch"],
-            )
-            .calc_loss_batch(
-                input_batch,
-                target_batch,
-                model,
-                device,
-            )
+        loss = calc_loss_batch(
+            input_batch,
+            target_batch,
+            model,
+            device,
         )
 
         verdict_loss += loss.item()
 
         batches += 1
 
-        # Limit evaluation
         if batches >= EVAL_ITER:
             break
 
@@ -353,7 +417,9 @@ if batches > 0:
     verdict_loss /= batches
 
     verdict_ppl = perplexity(
-        torch.tensor(verdict_loss)
+        torch.tensor(
+            verdict_loss
+        )
     )
 
     print(
@@ -369,5 +435,7 @@ if batches > 0:
 else:
 
     print(
-        "Not enough data for The Verdict evaluation."
+        "Not enough data for "
+        "The Verdict evaluation."
     )
+

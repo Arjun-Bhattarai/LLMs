@@ -6,6 +6,51 @@ This project focuses on understanding the internal mechanics of modern LLMs rath
 
 The project ultimately takes the custom GPT-2-compatible architecture, loads **OpenAI GPT-2 124M pretrained weights**, and performs **continued pretraining on WikiText-103**.
 
+> This repository is an educational GPT-2 implementation and experimentation
+> project. It is designed to make the training pipeline understandable and
+> reproducible, not to compete with production-scale foundation models.
+
+## 📚 Contents
+
+* [Highlights](#-highlights)
+* [Quick Start](#-quick-start)
+* [Architecture](#-architecture)
+* [Training Experiments](#-training-experiments)
+* [Kaggle GPU Training](#-kaggle-gpu-continued-training)
+* [Text Generation](#-text-generation)
+* [Fine-Tuning](#-fine-tuning-sms-spam-classification)
+* [Testing](#-testing)
+* [Project Structure](#-project-structure)
+* [Project Status](#-project-status)
+
+## 🚀 Quick Start
+
+### Requirements
+
+* Python 3.11 or newer
+* PyTorch 2.0 or newer
+* A CUDA-capable GPU is recommended for GPT-2 training
+* `tiktoken` for GPT-2 BPE tokenization
+
+Install the project dependencies from the repository environment, or install
+the packages required by the specific workflow you want to run. The complete
+training environment is substantially larger than the minimal inference
+requirements.
+
+### Choose a Workflow
+
+| Goal | Recommended entry point |
+| --- | --- |
+| Learn the components | `notebooks/` |
+| Run continued pretraining locally | `scripts/train.py` |
+| Continue a Kaggle checkpoint | `continue_gpt2_training.ipynb` |
+| Generate text | `src/llm/inference/` and `scripts/inference.py` |
+| Run the test suite | `tests/` |
+
+The repository includes both instructional notebooks and reusable Python
+modules. The notebooks explain the concepts step by step; the modules and
+scripts provide the repeatable implementation.
+
 ---
 
 ## 🚀 Highlights
@@ -32,6 +77,25 @@ The project ultimately takes the custom GPT-2-compatible architecture, loads **O
 * 🤖 Automated response evaluation using a local Ollama model
 * 🧪 Deterministic baseline-vs-trained model evaluation
 * 🧱 Modular PyTorch architecture with tests
+
+---
+
+# 🧪 Training Experiments
+
+This project contains two related experiments:
+
+| Experiment | Initialization | Dataset | Status |
+| --- | --- | --- | --- |
+| Original baseline | Pretrained GPT-2 124M | WikiText-103 | Completed at 10K steps |
+| Kaggle continuation | Original 10K checkpoint | WikiText-103 | Verified at 20K; 30K/50K are continuation targets |
+
+The model is not trained from random initialization in the main experiment.
+It starts from pretrained GPT-2 weights and adapts them to the WikiText-103
+corpus through continued pretraining.
+
+The reported results are intentionally separated by experiment. The original
+10K run provides the documented baseline comparison, while the Kaggle section
+records the later continuation checkpoint and its validation loss.
 
 ---
 
@@ -517,18 +581,23 @@ Checkpoint
 
 This allows training to resume without restarting from the beginning.
 
-The final WikiText checkpoint is:
+The original 10K WikiText checkpoint is:
 
 ```text
 checkpoints/gpt2_wikitext.pt
 ```
 
-Final checkpoint:
+Original baseline checkpoint:
 
 ```text
 Global step: 9999
 Epoch:       4
 ```
+
+The verified Kaggle continuation checkpoint reached 20,000 completed steps
+and is stored separately as `gpt2_wikitext_20k.pt`. Large PyTorch checkpoint
+files are ignored by Git and should be stored in Kaggle Datasets, local
+storage, or another model-artifact registry rather than committed to GitHub.
 
 ---
 
@@ -998,9 +1067,10 @@ This can be used by compatible AI coding assistants to:
 
 # 📌 Project Status
 
-## ✅ Completed!!!
+## ✅ Verified Project Status
 
-The project currently covers the complete experimental lifecycle of a GPT-style language model:
+The project currently covers the main experimental lifecycle of a GPT-style
+language model:
 
 ```text
 Architecture
@@ -1023,6 +1093,14 @@ Instruction Fine-Tuning
      ↓
 Automated Evaluation
 ```
+
+### Verified Milestones
+
+* GPT-2 124M architecture implemented and tested.
+* OpenAI GPT-2 weights loaded into the custom PyTorch model.
+* WikiText-103 continued pretraining completed for 10,000 steps.
+* Kaggle GPU continuation completed for 20,000 total steps.
+* Kaggle 30,000- and 50,000-step runs remain optional continuation targets.
 
 ### Original GPT-2 Experiment
 

@@ -73,6 +73,9 @@ checkpoint
 # Large GPT-2 downloaded models
 
 gpt2/
+.git/
+__pycache__/
+.pytest_cache/
 
 # Datasets
 

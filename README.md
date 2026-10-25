@@ -310,6 +310,92 @@ The final checkpoint contains:
 
 ---
 
+# ☁️ Kaggle GPU Continued Training
+
+The 10K-step checkpoint was continued on Kaggle using a Tesla T4 GPU. The
+Kaggle notebook uses the same GPT-2 tokenizer, model configuration, dataset
+preprocessing, and optimizer settings as the original experiment.
+
+## Kaggle Dataset Contents
+
+The project dataset contains the source code, prepared WikiText training and
+validation files, GPT-2 124M files, the original checkpoint, and the project
+configuration files.
+
+The continued-training checkpoint is stored separately because PyTorch
+checkpoint files are large and are ignored by Git. The 20K checkpoint is
+named `gpt2_wikitext_20k.pt`.
+
+The checkpoint should be attached to the Kaggle notebook as a Kaggle Dataset,
+not committed to GitHub.
+
+## Kaggle Environment
+
+Enable a GPU in the Kaggle notebook settings and install `tiktoken`. The
+project and checkpoint are mounted read-only under `/kaggle/input`, while
+training outputs must be written to `/kaggle/working`. If Kaggle assigns a
+different dataset slug, locate the mounted `gpt2_wikitext_20k.pt` file and use
+that path as the resume checkpoint.
+
+## Resuming Training
+
+The 20K checkpoint was created by resuming the original 10K checkpoint. Its
+verified metadata is:
+
+| Metric | Value |
+| --- | ---: |
+| Model | GPT-2 124M |
+| Global step | 19,999 |
+| Completed steps | 20,000 |
+| Epoch | 5 |
+| Training loss | 3.0135 |
+| Validation loss | 2.7882 |
+| Context length | 1,024 |
+| Batch size | 1 |
+| Learning rate | `1e-5` |
+| Weight decay | `0.1` |
+| Precision | FP16 AMP on CUDA |
+
+To continue from 20K to 30K, recreate the model and optimizer with the same
+configuration and pass the 20K checkpoint to the existing training loop. For
+a direct 20K-to-50K run, use `gpt2_wikitext_50k.pt` as the output filename and
+set the total target to 50,000 steps.
+
+The target is a total global step, not the number of additional steps. Keep
+the 20K checkpoint attached as a backup until the longer run has loaded it
+successfully.
+
+## Tokens Processed
+
+With a batch size of 1 and a context length of 1,024, each optimization step
+processes approximately 1,024 token positions. This corresponds to
+approximately 20.48 million processed token positions at 20,000 steps and
+51.2 million at 50,000 steps.
+
+These are processed token positions, not necessarily unique tokens. The
+training corpus is reused across optimization steps.
+
+## Saving Checkpoints
+
+Checkpoint files must be saved under `/kaggle/working`, such as
+`gpt2_wikitext_30k.pt` or `gpt2_wikitext_50k.pt`. After a run finishes,
+verify the saved global step and validation loss before closing the session.
+
+Publish the resulting `.pt` file as a Kaggle Dataset or store it locally.
+Do not commit it to GitHub; the repository `.gitignore` excludes `*.pt`, and
+GitHub's regular file limit is much smaller than these checkpoints.
+
+## Generating Text from a Trained Checkpoint
+
+After training, load the saved model state with the GPT-2 tokenizer and use
+the repository's generation utilities to generate text from a prompt. A
+temperature of 0.8 and top-k sampling of 50 are suitable starting settings.
+The model is trained for autoregressive continuation. It is not an
+instruction-following chatbot unless it is additionally fine-tuned on
+instruction-response data.
+
+---
+
 # 📊 Continued Pretraining Results
 
 The strongest experiment compares the original pretrained GPT-2 against the **10K-step WikiText-103 continued-pretrained model** on the same deterministic validation batches.
@@ -938,7 +1024,7 @@ Instruction Fine-Tuning
 Automated Evaluation
 ```
 
-### Final GPT-2 Experiment
+### Original GPT-2 Experiment
 
 ```text
 Model:              GPT-2 124M
@@ -949,6 +1035,11 @@ Optimization Steps: 10,000
 Validation PPL:     25.05 → 16.19
 PPL Improvement:    35.38%
 ```
+
+The original experiment above is the 10K-step baseline. The verified Kaggle
+continuation reached 20K total steps and reduced validation loss to `2.7882`.
+Further 30K and 50K runs are continuation targets using the same checkpoint
+resume workflow documented above.
 
 The project demonstrates the progression from implementing Transformer components manually to loading a real pretrained GPT-2 model and adapting it to a new corpus.
 

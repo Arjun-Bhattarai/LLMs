@@ -87,7 +87,7 @@ This project contains two related experiments:
 | Experiment | Initialization | Dataset | Status |
 | --- | --- | --- | --- |
 | Original baseline | Pretrained GPT-2 124M | WikiText-103 | Completed at 10K steps |
-| Kaggle continuation | Original 10K checkpoint | WikiText-103 | Verified at 20K; 30K/50K are continuation targets |
+| Kaggle continuation | Original 10K checkpoint | WikiText-103 | Verified at 100K total steps |
 
 The model is not trained from random initialization in the main experiment.
 It starts from pretrained GPT-2 weights and adapts them to the WikiText-103
@@ -386,55 +386,55 @@ The project dataset contains the source code, prepared WikiText training and
 validation files, GPT-2 124M files, the original checkpoint, and the project
 configuration files.
 
-The continued-training checkpoint is stored separately because PyTorch
-checkpoint files are large and are ignored by Git. The 20K checkpoint is
-named `gpt2_wikitext_20k.pt`.
+The continued-training checkpoints are stored separately because PyTorch
+checkpoint files are large and are ignored by Git. The final local checkpoint
+is `gpt2_wikitext_100k.pt`; earlier checkpoints remain available through the
+project's Kaggle Datasets.
 
-The checkpoint should be attached to the Kaggle notebook as a Kaggle Dataset,
-not committed to GitHub.
+Checkpoints should be attached to Kaggle notebooks as Kaggle Datasets, not
+committed to GitHub. If an earlier trained model is ever needed, retrieve its
+checkpoint from the corresponding Kaggle Dataset.
 
 ## Kaggle Environment
 
 Enable a GPU in the Kaggle notebook settings and install `tiktoken`. The
 project and checkpoint are mounted read-only under `/kaggle/input`, while
 training outputs must be written to `/kaggle/working`. If Kaggle assigns a
-different dataset slug, locate the mounted `gpt2_wikitext_20k.pt` file and use
-that path as the resume checkpoint.
+different dataset slug, locate the mounted previous checkpoint and use that
+path as the resume checkpoint.
 
 ## Resuming Training
 
-The 20K checkpoint was created by resuming the original 10K checkpoint. Its
-verified metadata is:
+The 100K checkpoint was created by repeatedly resuming earlier checkpoints,
+starting with the original 10K checkpoint. Its verified comparison results
+are:
 
 | Metric | Value |
 | --- | ---: |
 | Model | GPT-2 124M |
-| Global step | 19,999 |
-| Completed steps | 20,000 |
-| Epoch | 5 |
-| Training loss | 3.0135 |
-| Validation loss | 2.7882 |
+| Global step | 99,999 |
+| Completed steps | 100,000 |
+| Training loss | 2.4845 |
+| Validation loss | 2.6695 |
 | Context length | 1,024 |
 | Batch size | 1 |
 | Learning rate | `1e-5` |
 | Weight decay | `0.1` |
 | Precision | FP16 AMP on CUDA |
 
-To continue from 20K to 30K, recreate the model and optimizer with the same
-configuration and pass the 20K checkpoint to the existing training loop. For
-a direct 20K-to-50K run, use `gpt2_wikitext_50k.pt` as the output filename and
-set the total target to 50,000 steps.
+To continue training, attach the latest checkpoint from Kaggle Datasets,
+recreate the model and optimizer with the same configuration, and pass the
+checkpoint to the existing training loop.
 
 The target is a total global step, not the number of additional steps. Keep
-the 20K checkpoint attached as a backup until the longer run has loaded it
-successfully.
+the previous Kaggle checkpoint available until a later run has loaded its
+replacement successfully.
 
 ## Tokens Processed
 
 With a batch size of 1 and a context length of 1,024, each optimization step
 processes approximately 1,024 token positions. This corresponds to
-approximately 20.48 million processed token positions at 20,000 steps and
-51.2 million at 50,000 steps.
+approximately 102.4 million processed token positions at 100,000 steps.
 
 These are processed token positions, not necessarily unique tokens. The
 training corpus is reused across optimization steps.
@@ -442,8 +442,8 @@ training corpus is reused across optimization steps.
 ## Saving Checkpoints
 
 Checkpoint files must be saved under `/kaggle/working`, such as
-`gpt2_wikitext_30k.pt` or `gpt2_wikitext_50k.pt`. After a run finishes,
-verify the saved global step and validation loss before closing the session.
+`gpt2_wikitext_100k.pt`. After a run finishes, verify the saved global step
+and validation loss before closing the session.
 
 Publish the resulting `.pt` file as a Kaggle Dataset or store it locally.
 Do not commit it to GitHub; the repository `.gitignore` excludes `*.pt`, and
@@ -581,10 +581,10 @@ Checkpoint
 
 This allows training to resume without restarting from the beginning.
 
-The original 10K WikiText checkpoint is:
+The original 10K WikiText checkpoint was:
 
 ```text
-checkpoints/gpt2_wikitext.pt
+Available from the project's Kaggle Datasets
 ```
 
 Original baseline checkpoint:
@@ -594,10 +594,12 @@ Global step: 9999
 Epoch:       4
 ```
 
-The verified Kaggle continuation checkpoint reached 20,000 completed steps
-and is stored separately as `gpt2_wikitext_20k.pt`. Large PyTorch checkpoint
-files are ignored by Git and should be stored in Kaggle Datasets, local
-storage, or another model-artifact registry rather than committed to GitHub.
+The verified Kaggle continuation checkpoint reached 100,000 completed steps
+and is stored locally as `gpt2_wikitext_100k.pt`. Earlier trained checkpoints
+are available in Kaggle Datasets if they are needed for comparison or
+resuming. Large PyTorch checkpoint files are ignored by Git and should be
+stored in Kaggle Datasets, local storage, or another model-artifact registry
+rather than committed to GitHub.
 
 ---
 
@@ -861,8 +863,7 @@ The project is structured so that individual components can be tested independen
 LLMs/
 │
 ├── checkpoints/
-│   ├── gpt2_wikitext-103.pt
-│   └── gpt_checkpoint.pt
+│   └── gpt2_wikitext_100k.pt
 │
 ├── data/
 │   ├── the-verdict.txt
@@ -1115,9 +1116,10 @@ PPL Improvement:    35.38%
 ```
 
 The original experiment above is the 10K-step baseline. The verified Kaggle
-continuation reached 20K total steps and reduced validation loss to `2.7882`.
-Further 30K and 50K runs are continuation targets using the same checkpoint
-resume workflow documented above.
+continuation reached 100K total steps. Compared with the 50K checkpoint
+available from Kaggle Datasets, the 100K checkpoint reduced validation loss
+from `2.7123` to `2.6695` and
+perplexity from `15.0640` to `14.4332`.
 
 The project demonstrates the progression from implementing Transformer components manually to loading a real pretrained GPT-2 model and adapting it to a new corpus.
 

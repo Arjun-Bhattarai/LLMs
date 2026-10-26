@@ -5,10 +5,10 @@ from llm.inference.gpt2_pipeline import GPT2Pipeline
 
 # True  → use your WikiText-trained checkpoint
 # False → use original OpenAI GPT-2
-USE_TRAINED_MODEL = False
+USE_TRAINED_MODEL = True
 
 CHECKPOINT_PATH = (
-    "checkpoints/gpt2_wikitext.pt"
+    "checkpoints/gpt2_wikitext_50k.pt"
 )
 
 
@@ -62,4 +62,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

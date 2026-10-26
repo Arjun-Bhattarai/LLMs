@@ -8,7 +8,7 @@ from llm.inference.gpt2_pipeline import GPT2Pipeline
 USE_TRAINED_MODEL = True
 
 CHECKPOINT_PATH = (
-    "checkpoints/gpt2_wikitext_50k.pt"
+    "checkpoints/gpt2_wikitext_100k.pt"
 )
 
 

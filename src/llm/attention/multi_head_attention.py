@@ -98,34 +98,22 @@ class MultiHeadAttention(nn.Module):
         keys = keys.transpose(1, 2)
         values = values.transpose(1, 2)
 
-        # Attention scores
-        # (B, H, T, D) @ (B, H, D, T)
-        # -> (B, H, T, T)
-
-        attn_scores = queries @ keys.transpose(2, 3)
-
-        # Apply causal mask
-        mask = self.mask.bool()[:num_tokens, :num_tokens]
-
-        attn_scores = attn_scores.masked_fill(
-            mask,
-            -torch.inf,
-        )
-
-        # Scaled softmax
-        attn_weights = torch.softmax(
-            attn_scores / (self.head_dim ** 0.5),
-            dim=-1,
-        )
-
-        # Dropout
-        attn_weights = self.dropout(attn_weights)
-
-        # Weighted sum of values
-        # (B, H, T, T) @ (B, H, T, D)
-        # -> (B, H, T, D)
-
-        context_vec = attn_weights @ values
+        # PyTorch SDPA selects an efficient backend when available. Its causal
+        # mask and dropout behavior match the explicit implementation below.
+        if hasattr(torch.nn.functional, "scaled_dot_product_attention"):
+            context_vec = torch.nn.functional.scaled_dot_product_attention(
+                queries, keys, values,
+                attn_mask=None,
+                dropout_p=self.dropout.p if self.training else 0.0,
+                is_causal=True,
+            )
+        else:
+            scores = queries @ keys.transpose(2, 3)
+            mask = self.mask.bool()[:num_tokens, :num_tokens]
+            scores = scores.masked_fill(mask, -torch.inf)
+            weights = torch.softmax(scores / (self.head_dim ** 0.5), dim=-1)
+            weights = self.dropout(weights)
+            context_vec = weights @ values
 
         # Move token dimension back
         # (B, H, T, D)

@@ -23,14 +23,32 @@ def capture_rng_state():
     return state
 
 
+
 def restore_rng_state(state):
-    if not state:
+    if state is None:
         return
+
     random.setstate(state["python"])
     np.random.set_state(state["numpy"])
-    torch.set_rng_state(state["torch"])
+
+    torch_state = state["torch"]
+
+    if not isinstance(torch_state, torch.Tensor):
+        torch_state = torch.tensor(torch_state, dtype=torch.uint8)
+    else:
+        torch_state = torch_state.cpu().to(torch.uint8)
+
+    torch.set_rng_state(torch_state)
+
     if torch.cuda.is_available() and state.get("cuda"):
-        torch.cuda.set_rng_state_all(state["cuda"])
+        cuda_states = [
+            rng_state.cpu().to(torch.uint8)
+            if isinstance(rng_state, torch.Tensor)
+            else torch.tensor(rng_state, dtype=torch.uint8)
+            for rng_state in state["cuda"]
+        ]
+        torch.cuda.set_rng_state_all(cuda_states)
+
 
 
 def save_checkpoint(

@@ -17,8 +17,8 @@ from llm.gpt.model import GPTModel
 
 
 CHECKPOINTS = {
-    "100K": Path("checkpoints/gpt2_wikitext_100k.pt"),
-    "300K": Path("checkpoints/gpt2_wikitext_300k.pt"),
+    "300K": Path("checkpoints/gpt2_wikitext_300k.pt"), 
+    "400K": Path("checkpoints/gpt2_wikitext_400k.pt"),
 }
 
 VALIDATION_PATH = Path(

@@ -1,18 +1,18 @@
 {
-  "100K": {
-    "checkpoint": "checkpoints\\gpt2_wikitext_100k.pt",
-    "global_step": 99999,
-    "training_loss": 2.4844632387161254,
-    "validation_loss_from_checkpoint": 2.639201307296753,
-    "comparison_validation_loss": 2.66953125,
-    "comparison_perplexity": 14.433202043418301
-  },
   "300K": {
     "checkpoint": "checkpoints\\gpt2_wikitext_300k.pt",
-    "global_step": 216293,
-    "training_loss": 2.877085733413696,
-    "validation_loss_from_checkpoint": 2.5420483112335206,
-    "comparison_validation_loss": 2.621826171875,
-    "comparison_perplexity": 13.76083029477796
+    "global_step": 300000,
+    "training_loss": 3.1086301803588867,
+    "validation_loss_from_checkpoint": 2.5080862522125242,
+    "comparison_validation_loss": 2.608740234375,
+    "comparison_perplexity": 13.581930021416218
+  },
+  "400K": {
+    "checkpoint": "checkpoints\\gpt2_wikitext_400k.pt",
+    "global_step": 400000,
+    "training_loss": 3.3599019050598145,
+    "validation_loss_from_checkpoint": 2.4788486480712892,
+    "comparison_validation_loss": 2.597607421875,
+    "comparison_perplexity": 13.431563495296759
   }
 }

@@ -1,20 +1,14 @@
 Prompt: The history of the world
 
-[300K]
-The history of the world , the West Indies has been the world 's leading colonial power since independence , and has ruled for over 200 years . In terms of population , this includes the entire Indies , including the entire world 's largest islands , including Australia , New Zealand , Fiji and Indonesia . 
-
-
- In the 1950s and 1960s , the economy of the West Indies was at its peak , with a national GDP
-
 [400K]
 The history of the world , the West Indies and its colonies , are a part of the history of the world . The United States was a part of this history , and this history is what is most significant . In the United States , the land has been occupied by a people for centuries . There was an earlier history of the United States than in other parts of the world and it was at that time that the nation in the
+
+[500K]
+The history of the world , the West Indies have been the world 's leading colonial power since independence , and were at the time the most powerful nation in the world . The West Indies became the most powerful colonial power in the world in the 18th and 19th centuries , but had little control over the development of the economy of the country . In the early 20th century , it became the dominant state in the world for
 
 ================================================================================
 
 Prompt: The development of modern science
-
-[300K]
-The development of modern science fiction was marked by the rise of the science fiction genre in the 1970s , and the rise of the science fiction fandom ( which also included the X @-@ Files ) . The popularity of science fiction was first noted by Alan Silberstein in his novel The X @-@ Files in 1978 , and has continued to gain popularity . In the mid @-@ 1980s , the Internet and
 
 [400K]
 The development of modern science , the development of science as a whole , had been completed in the late 20th century . 
@@ -25,15 +19,12 @@ The development of modern science , the development of science as a whole , had 
 
  There is a strong rivalry between the two branches of science in the United States . In recent years the two branches of science have been increasingly different . The American
 
+[500K]
+The development of modern science fiction was marked by the rise of the science fiction genre in the 1970s , and the rise of the science fiction fandom ( which also included the X @-@ Files ) . The popularity of science fiction was first noted by Alan Silberstein in his novel The X @-@ Files in 1978 , and has continued to gain popularity . In the mid @-@ 1980s , the Internet and
+
 ================================================================================
 
 Prompt: In the future, technology will
-
-[300K]
-In the future, technology will enable the production of high @-@ performance devices such as the Internet . 
-
-
- The United States Air Force has the Air Force Research and Development Center at Eglin Air Force Base , in Quantico , Virginia , and the U.S. Air Force Office of Scientific Research and Development in Bethesda , Maryland , in Bethesda , Maryland . In the mid @-@ 1980s , the Air Force
 
 [400K]
 In the future, technology will enable the production of high @-@ performance weapons and armor @-@ piercing weapons . The United States has a requirement for an armored belt capable of protecting the entire United States from hostile aircraft . 
@@ -49,6 +40,9 @@ In the future, technology will enable the production of high @-@ performance wea
 
 
  The United States needs to acquire enough aircraft in order
+
+[500K]
+In the future, technology will enable the production of high @-@ performance weapons and armor @-@ piercing weapons . The United States Air Force has already begun building a system for detecting and tracking such threats . The U.S. has already begun fielding an airborne reconnaissance system based on M @-@ 28E . This system is capable of detecting and tracking targets on the ground and in flight . Aircraft are flying around in the
 
 ================================================================================
 
